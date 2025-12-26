@@ -186,11 +186,15 @@ export const TreeSection: React.FC<TreeSectionProps> = ({ id }) => {
         <ComplexityHUD data={TREE_COMPLEXITY} />
         <StepControl stepMode={stepMode} setStepMode={setStepMode} onNext={nextStep} />
         <div className="space-y-3 mt-auto">
-                    <div className="grid grid-cols-2 gap-2">
-            <Input value={val} onChange={setVal} placeholder="Value to Add" />
-            <Button onClick={insert} icon={Plus} disabled={isRunning}>Add</Button>
-            <Input value={deleteVal} onChange={setDeleteVal} placeholder="Value to Delete" />
-            <Button onClick={deleteNode} icon={Trash2} variant="danger" disabled={isRunning}>Delete</Button>
+                    <div className="space-y-2">
+            <div className="flex gap-2">
+              <Input value={val} onChange={setVal} placeholder="Value to Add" />
+              <Button onClick={insert} icon={Plus} disabled={isRunning}>Add</Button>
+            </div>
+            <div className="flex gap-2">
+              <Input value={deleteVal} onChange={setDeleteVal} placeholder="Value to Delete" />
+              <Button onClick={deleteNode} icon={Trash2} variant="danger" disabled={isRunning}>Delete</Button>
+            </div>
           </div>
           <div className="h-px bg-[var(--border-color)] my-2" />
           <Select 
