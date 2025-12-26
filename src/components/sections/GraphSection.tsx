@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Network, Plus, RotateCcw, Play, StopCircle } from 'lucide-react';
+import { Network, Plus, RotateCcw, Play, StopCircle, Trash2 } from 'lucide-react';
 import { THEME } from '../core/ThemeContext';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
@@ -30,8 +30,11 @@ interface GraphSectionProps {
 
 export const GraphSection: React.FC<GraphSectionProps> = ({ id }) => {
   const [algo, setAlgo] = useState('bfs');
-  const [nodes, setNodes] = useState<Node[]>([{id:'A',x:0,y:-120}, {id:'B',x:-120,y:0}, {id:'C',x:120,y:0}, {id:'D',x:0,y:120}]);
-  const [edges, setEdges] = useState<Edge[]>([{from:'A',to:'B',w:4}, {from:'A',to:'C',w:2}, {from:'B',to:'C',w:1}, {from:'B',to:'D',w:5}, {from:'C',to:'D',w:8}]);
+  const initialNodes: Node[] = [{id:'A',x:0,y:-120}, {id:'B',x:-120,y:0}, {id:'C',x:120,y:0}, {id:'D',x:0,y:120}];
+  const initialEdges: Edge[] = [{from:'A',to:'B',w:4}, {from:'A',to:'C',w:2}, {from:'B',to:'C',w:1}, {from:'B',to:'D',w:5}, {from:'C',to:'D',w:8}];
+
+  const [nodes, setNodes] = useState<Node[]>(initialNodes);
+  const [edges, setEdges] = useState<Edge[]>(initialEdges);
   
   const [visited, setVisited] = useState<string[]>([]);
   const [distances, setDistances] = useState<{[key: string]: number}>({});
@@ -44,6 +47,9 @@ export const GraphSection: React.FC<GraphSectionProps> = ({ id }) => {
   const [edgeFrom, setEdgeFrom] = useState('');
   const [edgeTo, setEdgeTo] = useState('');
   const [edgeWeight, setEdgeWeight] = useState('1');
+  const [nodeToDelete, setNodeToDelete] = useState('');
+  const [edgeToDeleteFrom, setEdgeToDeleteFrom] = useState('');
+  const [edgeToDeleteTo, setEdgeToDeleteTo] = useState('');
   
   const nextStepRef = useRef<(() => void) | null>(null);
   const stopRef = useRef(false);
@@ -190,6 +196,47 @@ export const GraphSection: React.FC<GraphSectionProps> = ({ id }) => {
     setEdgeFrom(''); setEdgeTo(''); setEdgeWeight('1');
   };
 
+      const deleteNode = () => {
+    const indexToDelete = parseInt(nodeToDelete, 10);
+    if (isNaN(indexToDelete) || indexToDelete < 0 || indexToDelete >= nodes.length) {
+      setNodeToDelete('');
+      return; // Invalid index
+    }
+
+    const idToDelete = nodes[indexToDelete].id;
+
+    const newNodes = nodes.filter((_, i) => i !== indexToDelete);
+    const newEdges = edges.filter(e => e.from !== idToDelete && e.to !== idToDelete);
+
+    setNodes(newNodes);
+    setNodes(newNodes);
+    setEdges(newEdges);
+    setNodeToDelete('');
+    resetAlgoState();
+  };
+
+  const deleteEdge = () => {
+    const from = edgeToDeleteFrom.toUpperCase().trim();
+    const to = edgeToDeleteTo.toUpperCase().trim();
+    if (!from || !to) return;
+
+    const newEdges = edges.filter(e => 
+        !(e.from === from && e.to === to) && 
+        !(e.from === to && e.to === from)
+    );
+
+    setEdges(newEdges);
+    setEdgeToDeleteFrom('');
+    setEdgeToDeleteTo('');
+    resetAlgoState();
+  };
+
+  const resetGraph = () => {
+    setNodes(initialNodes);
+    setEdges(initialEdges);
+    resetAlgoState();
+  }
+
   const generateRandomGraph = () => {
     resetAlgoState('Generating Random Graph...');
     const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -247,12 +294,26 @@ export const GraphSection: React.FC<GraphSectionProps> = ({ id }) => {
               <Input value={edgeWeight} onChange={setEdgeWeight} placeholder="W" type="number" />
             </div>
             <Button onClick={addEdge} variant="secondary" className="w-full">Link Nodes</Button>
+            <div className="h-px bg-white/5 my-2" />
+                        <div className="flex gap-2">
+              <Input value={nodeToDelete} onChange={setNodeToDelete} placeholder="Node # to Delete" type="number" />
+              <Button onClick={deleteNode} variant="danger" className="px-3"><Trash2 size={14}/></Button>
+            </div>
+            <div className="h-px bg-white/5 my-2" />
+            <div className="grid grid-cols-2 gap-1">
+              <Input value={edgeToDeleteFrom} onChange={setEdgeToDeleteFrom} placeholder="From" />
+              <Input value={edgeToDeleteTo} onChange={setEdgeToDeleteTo} placeholder="To" />
+            </div>
+            <Button onClick={deleteEdge} variant="danger" className="w-full">Unlink Nodes</Button>
           </div>
           
           <StepControl stepMode={stepMode} setStepMode={setStepMode} onNext={() => nextStepRef.current?.()} />
           
           <div className="space-y-3 mt-auto">
-            <Button onClick={generateRandomGraph} variant="secondary" className="w-full" icon={RotateCcw}>Randomize Graph</Button>
+            <div className="grid grid-cols-2 gap-2">
+            <Button onClick={generateRandomGraph} variant="secondary" className="w-full" icon={RotateCcw}>Randomize</Button>
+            <Button onClick={resetGraph} variant="secondary" className="w-full">Reset</Button>
+            </div>
             {algo !== 'dijkstra' && (
               <Input value={target} onChange={setTarget} placeholder="Target Node ID" />
             )}
@@ -301,7 +362,7 @@ export const GraphSection: React.FC<GraphSectionProps> = ({ id }) => {
               })}
             </svg>
             <AnimatePresence>
-              {nodes.map(n => {
+              {nodes.map((n, i) => {
                 const d = distances[n.id];
                 return (
                   <motion.div 
@@ -313,7 +374,7 @@ export const GraphSection: React.FC<GraphSectionProps> = ({ id }) => {
                     )} 
                     style={{ left: 300 + n.x, top: 300 + n.y }} 
                   >
-                    <span className="text-[10px] font-bold">{n.id}</span>
+                    <span className="text-[10px] font-bold">{i}: {n.id}</span>
                     {d !== undefined && (
                       <span className="text-[8px] text-cyan-500 mt-1">{d === Infinity ? '∞' : `d:${d}`}</span>
                     )}
