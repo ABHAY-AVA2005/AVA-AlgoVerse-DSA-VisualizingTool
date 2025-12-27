@@ -22,7 +22,7 @@ export const CreatorBadge = () => {
           >
             <div className="flex items-center gap-4 mb-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-cyan-500/50 bg-cyan-500/10 overflow-hidden">
-                <img src="/src/assets/Abhay_image_AI.png" alt="A" className="w-full h-full object-cover" />
+                <img src="/src/assets/Abhay.jpg" alt="A" className="w-full h-full object-cover" />
               </div>
               <div>
                 <h3 className="text-white font-bold font-mono text-sm leading-none">
