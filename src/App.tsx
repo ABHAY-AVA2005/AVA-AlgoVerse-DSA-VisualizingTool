@@ -2,8 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles } from 'lucide-react';
 import { ThemeContext, GlobalStyles } from './components/core/ThemeContext';
-import { SystemCursor } from './components/core/SystemCursor';
-import { TopBar } from './components/layouts/TopBar';
+import { LeftSidebar } from './components/layouts/LeftSidebar';
 import { Footer } from './components/layouts/Footer';
 import { CreatorBadge } from './components/core/CreatorBadge';
 import { AIAssistant } from './components/core/AIAssistant';
@@ -33,9 +32,11 @@ export default function App() {
    const [loading, setLoading] = useState(true);
    const [isDark, setIsDark] = useState(true);
    const toggleTheme = () => setIsDark(prev => !prev);
+   const [speedFactor, setSpeedFactor] = useState(1);
 
    useEffect(() => { const timer = setTimeout(() => setLoading(false), 4000); return () => clearTimeout(timer); }, []);
    useEffect(() => { document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light'); }, [isDark]);
+   useEffect(() => { (window as any).__SPEED_FACTOR__ = speedFactor; }, [speedFactor]);
    useEffect(() => {
      let timeoutId: number | null = null;
      const handleScroll = () => {
@@ -58,32 +59,36 @@ export default function App() {
    }, [sect]);
 
    return (
-      <ThemeContext.Provider value={{ isDark, toggleTheme }}>
+      <ThemeContext.Provider value={{ isDark, toggleTheme, speedFactor, setSpeedFactor }}>
         <AnimatePresence>{loading && <Preloader key="loader" onLoadingComplete={() => setLoading(false)} />}</AnimatePresence>
         <div className="w-full bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans selection:bg-[var(--primary)]/30 overflow-x-hidden relative transition-colors duration-300">
-           <GlobalStyles /><SystemCursor /><TopBar activeSection={sect} />
-           <main>
-              <Hero id="home" />
-              {/* Algorithm sections follow with 3:7 split */}
-              <ArraySection id="arrays" />
-              <LinkedListSection id="ll" />
-              <SearchSection id="search" />
-              <SortingSection id="sorting" />
-              <HashingSection id="hashing" />
-              <StackQueueSection id="stack" />
-              <TreeSection id="tree" />
-              <GraphSection id="graph" />
-              <SchedulingSection id="sched" />
-              <Footer />
-           </main>
+           <GlobalStyles />
+           <div className="flex">
+             <LeftSidebar activeSection={sect} />
+             <main className="flex-1 lg:ml-[160px] mt-[53px] lg:mt-0">
+               <Hero id="home" />
+               {/* Algorithm sections follow with accent-color identity */}
+               <ArraySection id="arrays" />
+               <LinkedListSection id="ll" />
+               <SearchSection id="search" />
+               <SortingSection id="sorting" />
+               <HashingSection id="hashing" />
+               <StackQueueSection id="stack" />
+               <TreeSection id="tree" />
+               <GraphSection id="graph" />
+               <SchedulingSection id="sched" />
+               <Footer />
+             </main>
+           </div>
            
            <AnimatePresence>
              {sect === 'home' && <CreatorBadge />}
            </AnimatePresence>
 
            <div className="fixed bottom-8 right-8 z-50 no-scroll">
-              <button onClick={() => setAiOpen(!aiOpen)} className="group p-4 rounded-full bg-[var(--primary)]/10 text-[var(--primary)] hover:bg-[var(--primary)] hover:text-white transition-all border border-[var(--primary)]/50 shadow-[0_0_30px_rgba(34,211,238,0.3)] backdrop-blur-md">
-                  <Sparkles size={24} className="group-hover:animate-pulse" />
+              <button onClick={() => setAiOpen(!aiOpen)} className="group flex items-center gap-2 px-4 py-3 rounded-full bg-[var(--primary)]/10 text-[var(--primary)] hover:bg-[var(--primary)] hover:text-white transition-all border border-[var(--primary)]/50 shadow-[0_0_30px_rgba(34,211,238,0.3)] backdrop-blur-md">
+                  <Sparkles size={20} className="group-hover:animate-pulse" />
+                  <span className="font-mono text-xs font-bold tracking-wider uppercase hidden sm:block">AI Assistant</span>
               </button>
            </div>
            <AIAssistant activeSection={sect} isOpen={aiOpen} onClose={() => setAiOpen(false)} />

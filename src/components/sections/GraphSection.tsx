@@ -1,7 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Network, Plus, RotateCcw, Play, StopCircle, Trash2 } from 'lucide-react';
-import { THEME } from '../core/ThemeContext';
+import { Network, Plus, RotateCcw, Play, StopCircle, Trash2, Dices } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { StepControl } from '../ui/StepControl';
@@ -9,6 +8,9 @@ import { ComplexityHUD } from '../ui/ComplexityHUD';
 import { SectionHeader } from '../ui/SectionHeader';
 import { GridBackground } from '../ui/GridBackground';
 import { cn, wait } from '../../lib/utils';
+
+const ACCENT = 'var(--accent-graph)';
+const ACCENT_HEX = '#FB923C';
 
 const GRAPH_COMPLEXITY = { dijkstra: { time: { best: 'Ω(E log V)', avg: 'Θ(E log V)', worst: 'O(E log V)' }, space: 'O(V + E)', note: 'Shortest Path.' }, bfs: { time: { best: 'Ω(V+E)', avg: 'Θ(V+E)', worst: 'O(V+E)' }, space: 'O(V)', note: 'Unweighted.' }, dfs: { time: { best: 'Ω(V+E)', avg: 'Θ(V+E)', worst: 'O(V+E)' }, space: 'O(V)', note: 'Topology.' } };
 
@@ -57,7 +59,7 @@ export const GraphSection: React.FC<GraphSectionProps> = ({ id }) => {
   const proceed = async (customDelay = 600) => { 
     if (stopRef.current) throw new Error("STOPPED");
     if (stepMode) await new Promise<void>(resolve => { nextStepRef.current = resolve; }); 
-    else await wait(customDelay); 
+    else await wait(customDelay / ((window as any).__SPEED_FACTOR__ || 1)); 
   };
 
   const getAdjacency = useCallback(() => {
@@ -267,12 +269,23 @@ export const GraphSection: React.FC<GraphSectionProps> = ({ id }) => {
   };
 
   return (
-    <section id={id} className="min-h-screen w-full flex flex-col lg:flex-row relative border-t border-white/5">
-      {/* LEFT: 30% Panel */}
-      <div className={`w-full lg:w-[30%] ${THEME.sidebar} p-8 flex flex-col z-20 gap-6 overflow-y-auto no-scroll`}>
-          <SectionHeader title="Graph" subtitle="Network Engine." icon={Network} index="07" />
+    <section
+      id={id}
+      className="min-h-screen w-full flex flex-col lg:flex-row relative"
+      style={{ borderTop: '1px solid var(--border-color)' }}
+    >
+      {/* LEFT: Sidebar Panel */}
+      <div
+        className="w-full lg:w-[300px] shrink-0 flex flex-col z-20 gap-6 p-6 lg:p-8 overflow-y-auto"
+        style={{
+          background: 'var(--bg-secondary)',
+          borderRight: '1px solid var(--border-color)',
+          borderLeft: `2px solid ${ACCENT}`,
+        }}
+      >
+          <SectionHeader title="Graphs" subtitle="Network Engine." icon={Network} index="08" accent={ACCENT} />
           
-          <div className="flex gap-2 p-1 bg-black/40 rounded-xl border border-white/5">
+          <div className="flex gap-2 p-1 bg-[var(--card-bg)] rounded-xl border border-[var(--border-color)]">
             {['dijkstra', 'bfs', 'dfs'].map(a => (
               <Button key={a} onClick={() => { setAlgo(a); resetAlgoState(); }} variant={algo === a ? 'ai' : 'secondary'} className="flex-1 text-[10px] px-0">
                 {a.toUpperCase()}
@@ -280,10 +293,10 @@ export const GraphSection: React.FC<GraphSectionProps> = ({ id }) => {
             ))}
           </div>
 
-          <ComplexityHUD data={GRAPH_COMPLEXITY[algo as keyof typeof GRAPH_COMPLEXITY]} />
+          <ComplexityHUD data={GRAPH_COMPLEXITY[algo as keyof typeof GRAPH_COMPLEXITY]} accent={ACCENT} />
           
-          <div className="space-y-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5">
-            <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest flex items-center gap-2"><Plus size={12}/> Construct Graph</span>
+          <div className="space-y-4 p-4 rounded-2xl bg-[var(--bg-tertiary)] border border-[var(--border-color)]">
+            <span className="text-[10px] font-bold text-[var(--primary)] uppercase tracking-widest flex items-center gap-2"><Plus size={12}/> Construct Graph</span>
             <div className="flex gap-2">
               <Input value={newNodeId} onChange={setNewNodeId} placeholder="Label (e.g. NodeX)" />
               <Button onClick={addNode} variant="secondary" className="px-3"><Plus size={14}/></Button>
@@ -307,12 +320,12 @@ export const GraphSection: React.FC<GraphSectionProps> = ({ id }) => {
             <Button onClick={deleteEdge} variant="danger" className="w-full">Unlink Nodes</Button>
           </div>
           
-          <StepControl stepMode={stepMode} setStepMode={setStepMode} onNext={() => nextStepRef.current?.()} />
+          <StepControl stepMode={stepMode} setStepMode={setStepMode} onNext={() => nextStepRef.current?.()} accent={ACCENT} />
           
           <div className="space-y-3 mt-auto">
             <div className="grid grid-cols-2 gap-2">
-            <Button onClick={generateRandomGraph} variant="secondary" className="w-full" icon={RotateCcw}>Randomize</Button>
-            <Button onClick={resetGraph} variant="secondary" className="w-full">Reset</Button>
+              <Button onClick={generateRandomGraph} variant="secondary" className="w-full" icon={Dices}>Randomize</Button>
+              <Button onClick={resetGraph} variant="danger" className="w-full" icon={Trash2}>Clear All</Button>
             </div>
             {algo !== 'dijkstra' && (
               <Input value={target} onChange={setTarget} placeholder="Target Node ID" />
@@ -338,14 +351,30 @@ export const GraphSection: React.FC<GraphSectionProps> = ({ id }) => {
           </div>
 
           <div className="bg-[var(--bg-primary)] border border-[var(--border-color)] p-4 rounded-xl font-mono text-xs text-[var(--text-secondary)] shadow-inner">
-            <span className="text-cyan-500 font-bold mr-2">{'>'}</span>{status}
+            <span className="text-[var(--primary)] font-bold mr-2">{'>'}</span>{status}
           </div>
       </div>
       
-      {/* RIGHT: 70% Visualization */}
-      <div className={`w-full lg:w-[70%] ${THEME.canvas} flex items-center justify-center relative`}>
+      {/* RIGHT: Canvas */}
+      <div
+        className="flex-1 min-h-[60vh] lg:min-h-0 relative flex items-center justify-center overflow-hidden"
+        style={{ background: 'var(--bg-primary)' }}
+      >
+          {/* Accent radial glow */}
+          <div
+            className="absolute pointer-events-none"
+            style={{
+              width: 700,
+              height: 700,
+              borderRadius: '50%',
+              background: `radial-gradient(circle, ${ACCENT_HEX}08 0%, transparent 70%)`,
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+            }}
+          />
           <GridBackground />
-          <div className="relative w-[600px] h-[600px] bg-black/20 rounded-full border border-white/5">
+          <div className="relative w-[600px] h-[600px] bg-[var(--bg-tertiary)] rounded-full border border-[var(--border-color)]">
             <svg className="absolute inset-0 w-full h-full overflow-visible pointer-events-none">
               {edges.map((e, i) => {
                 const s = nodes.find(n => n.id === e.from);
@@ -376,7 +405,7 @@ export const GraphSection: React.FC<GraphSectionProps> = ({ id }) => {
                   >
                     <span className="text-[10px] font-bold">{i}: {n.id}</span>
                     {d !== undefined && (
-                      <span className="text-[8px] text-cyan-500 mt-1">{d === Infinity ? '∞' : `d:${d}`}</span>
+                      <span className="text-[8px] text-[var(--primary)] mt-1">{d === Infinity ? '∞' : `d:${d}`}</span>
                     )}
                   </motion.div>
                 );

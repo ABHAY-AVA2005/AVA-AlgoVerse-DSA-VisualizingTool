@@ -1,25 +1,61 @@
 import React from 'react';
-import { StepForward } from 'lucide-react';
-import { cn } from '../../lib/utils';
-import { Button } from './Button';
+import { motion } from 'framer-motion';
+import { ChevronRight } from 'lucide-react';
 
 interface StepControlProps {
   stepMode: boolean;
-  setStepMode: (value: boolean) => void;
+  setStepMode: (v: boolean) => void;
   onNext: () => void;
-  disabled?: boolean;
+  accent?: string;
 }
 
-export const StepControl: React.FC<StepControlProps> = ({ stepMode, setStepMode, onNext, disabled }) => (
-    <div className="flex items-center gap-2 w-full">
-        <div className="flex items-center justify-between bg-[var(--bg-primary)] p-2 rounded-lg border border-[var(--border-color)] flex-1">
-             <span className="text-[10px] text-[var(--text-secondary)] font-mono uppercase tracking-wider ml-2">Step Mode</span>
-             <button onClick={() => setStepMode(!stepMode)} className={cn("w-10 h-5 rounded-full relative transition-colors border border-[var(--border-color)]", stepMode ? "bg-cyan-900/50 border-cyan-500/50" : "bg-neutral-800")}>
-                 <div className={cn("absolute top-1 left-1 w-3 h-3 bg-white rounded-full transition-transform shadow-md", stepMode ? "translate-x-5 bg-cyan-400" : "bg-neutral-500")} />
-             </button>
-        </div>
-        {stepMode && (
-            <Button onClick={onNext} icon={StepForward} disabled={disabled} className="bg-cyan-600 hover:bg-cyan-500 text-white border-none h-full py-0">Next</Button>
-        )}
+export const StepControl: React.FC<StepControlProps> = ({
+  stepMode, setStepMode, onNext, accent = 'var(--primary)'
+}) => (
+  <div className="flex flex-col gap-3">
+    {/* Toggle row */}
+    <div className="flex items-center justify-between">
+      <span
+        className="text-[10px] uppercase tracking-[0.15em]"
+        style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}
+      >
+        Step Mode
+      </span>
+      <button
+        onClick={() => setStepMode(!stepMode)}
+        className="relative w-10 h-5 rounded-full transition-all duration-200"
+        style={{
+          background: stepMode ? accent : 'var(--bg-elevated)',
+          border: '1px solid var(--border-active)',
+        }}
+        aria-label="Toggle step mode"
+      >
+        <motion.div
+          animate={{ x: stepMode ? 18 : 2 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+          className="absolute top-0.5 w-4 h-4 rounded-full"
+          style={{ background: stepMode ? 'black' : 'var(--text-secondary)' }}
+        />
+      </button>
     </div>
+
+    {/* Next Step button — only visible when step mode is on */}
+    {stepMode && (
+      <motion.button
+        initial={{ opacity: 0, height: 0 }}
+        animate={{ opacity: 1, height: 'auto' }}
+        exit={{ opacity: 0, height: 0 }}
+        onClick={onNext}
+        className="flex items-center justify-center gap-2 py-2.5 rounded-[var(--radius-md)] text-[11px] font-mono font-bold uppercase tracking-wider transition-all"
+        style={{
+          background: `${accent}18`,
+          border: `1px solid ${accent}40`,
+          color: accent,
+        }}
+      >
+        <ChevronRight size={13} />
+        Next Step
+      </motion.button>
+    )}
+  </div>
 );

@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Cpu, Plus, Trash2, Play, RotateCcw } from 'lucide-react';
-import { THEME } from '../core/ThemeContext';
+import { Clock, Plus, Trash2, Play, RotateCcw, Dices } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Select } from '../ui/Select';
@@ -10,6 +9,9 @@ import { ComplexityHUD } from '../ui/ComplexityHUD';
 import { SectionHeader } from '../ui/SectionHeader';
 import { GridBackground } from '../ui/GridBackground';
 import { cn, wait } from '../../lib/utils';
+
+const ACCENT = 'var(--accent-sched)';
+const ACCENT_HEX = '#E879F9';
 
 const SCHED_COMPLEXITY = { fcfs: { time: { best: 'Ω(n)', avg: 'Θ(n log n)', worst: 'O(n log n)' }, space: 'O(n)' }, sjf: { time: { best: 'Ω(n)', avg: 'Θ(n log n)', worst: 'O(n log n)' }, space: 'O(n)' }, rr: { time: { best: 'Ω(n)', avg: 'Θ(n)', worst: 'O(n)' }, space: 'O(n)' }, prio: { time: { best: 'Ω(n)', avg: 'Θ(n log n)', worst: 'O(n log n)' }, space: 'O(n)' } };
 
@@ -32,7 +34,7 @@ export const SchedulingSection: React.FC<SchedulingSectionProps> = ({ id }) => {
   const [running, setRunning] = useState(false); const [quantum, setQuantum] = useState('2');
   const [stepMode, setStepMode] = useState(false);
   const nextStepRef = useRef<(() => void) | null>(null);
-  const proceed = async () => { if (stepMode) await new Promise<void>(resolve => { nextStepRef.current = resolve; }); else await wait(200); };
+  const proceed = async () => { if (stepMode) await new Promise<void>(resolve => { nextStepRef.current = resolve; }); else await wait(200 / ((window as any).__SPEED_FACTOR__ || 1)); };
   const nextStep = () => { if (nextStepRef.current) { nextStepRef.current(); nextStepRef.current = null; } };
 
   const addJob = () => { if(!newId || !newArr || !newBurst) return; setJobs([...jobs, { id: newId, a: parseInt(newArr), b: parseInt(newBurst), p: parseInt(newPrio) || 0 }]); setNewId(''); setNewArr(''); setNewBurst(''); setNewPrio(''); };
@@ -67,14 +69,25 @@ export const SchedulingSection: React.FC<SchedulingSectionProps> = ({ id }) => {
   };
 
   return (
-    <section id={id} className="min-h-screen w-full flex flex-col lg:flex-row relative border-t border-[var(--border-color)]">
-      {/* LEFT: 30% Panel */}
-      <div className={`w-full lg:w-[30%] ${THEME.sidebar} p-6 flex flex-col gap-6`}>
-          <SectionHeader title="CPU Scheduling" subtitle="OS Management" icon={Cpu} index="08" />
+    <section
+      id={id}
+      className="min-h-screen w-full flex flex-col lg:flex-row relative"
+      style={{ borderTop: '1px solid var(--border-color)' }}
+    >
+      {/* LEFT: Sidebar Panel */}
+      <div
+        className="w-full lg:w-[300px] shrink-0 flex flex-col z-20 gap-6 p-6 lg:p-8"
+        style={{
+          background: 'var(--bg-secondary)',
+          borderRight: '1px solid var(--border-color)',
+          borderLeft: `2px solid ${ACCENT}`,
+        }}
+      >
+          <SectionHeader title="CPU Scheduling" subtitle="OS Management." icon={Clock} index="09" accent={ACCENT} />
           <Select value={algo} onChange={setAlgo} options={[ {value:'fcfs',label:'FCFS'}, {value:'sjf',label:'Shortest Job First'}, {value:'rr',label:'Round Robin'}, {value:'prio',label:'Priority'} ]} />
           {algo === 'rr' && <div className="space-y-1"><label className="text-[10px] text-[var(--text-muted)] font-bold">Time Quantum</label><Input value={quantum} onChange={setQuantum} placeholder="2" /></div>}
-          <ComplexityHUD data={SCHED_COMPLEXITY[algo as keyof typeof SCHED_COMPLEXITY]} />
-          <StepControl stepMode={stepMode} setStepMode={setStepMode} onNext={nextStep} />
+          <ComplexityHUD data={SCHED_COMPLEXITY[algo as keyof typeof SCHED_COMPLEXITY]} accent={ACCENT} />
+          <StepControl stepMode={stepMode} setStepMode={setStepMode} onNext={nextStep} accent={ACCENT} />
           <div className="bg-[var(--bg-card)] p-3 rounded-xl border border-[var(--border-color)] space-y-2">
               <div className="flex gap-1"><Input value={newId} onChange={setNewId} placeholder="ID" className="w-12" /><Input value={newArr} onChange={setNewArr} placeholder="AT" /><Input value={newBurst} onChange={setNewBurst} placeholder="BT" /><Button onClick={addJob} icon={Plus} >Add</Button></div>
           </div>
@@ -85,12 +98,32 @@ export const SchedulingSection: React.FC<SchedulingSectionProps> = ({ id }) => {
               </table>
           </div>
           <div className="grid grid-cols-2 gap-2">
-              <Button onClick={run} icon={Play} disabled={running}>Run</Button>
+              <Button onClick={run} icon={Play} disabled={running} accent={ACCENT}>Run</Button>
               <Button onClick={()=>{setTimeline([]); setCompletedJobs([]);}} variant="secondary" icon={RotateCcw}>Reset</Button>
           </div>
+          <div className="grid grid-cols-2 gap-2 mt-2">
+            <Button onClick={() => setJobs(Array.from({length: 4}, (_,i) => ({id: `P${i+1}`, a: Math.floor(Math.random()*5), b: Math.floor(Math.random()*6)+2, p: Math.floor(Math.random()*4)+1})))} variant="secondary" icon={Dices}>Randomize</Button>
+            <Button onClick={() => {setJobs([]); setTimeline([]); setCompletedJobs([]);}} variant="danger" icon={Trash2} disabled={running}>Clear All</Button>
+          </div>
       </div>
-      {/* RIGHT: 70% Visualization */}
-      <div className={`w-full lg:w-[70%] ${THEME.canvas} flex flex-col items-center justify-start p-10`}>
+      {/* RIGHT: Canvas */}
+      <div
+        className="flex-1 min-h-[60vh] lg:min-h-0 relative flex flex-col items-center justify-center p-10 overflow-hidden"
+        style={{ background: 'var(--bg-primary)' }}
+      >
+          {/* Accent radial glow */}
+          <div
+            className="absolute pointer-events-none"
+            style={{
+              width: 600,
+              height: 600,
+              borderRadius: '50%',
+              background: `radial-gradient(circle, ${ACCENT_HEX}08 0%, transparent 70%)`,
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+            }}
+          />
           <GridBackground />
           <div className="w-full max-w-3xl">
               <div className="flex h-16 w-full bg-[var(--bg-card)] rounded-xl overflow-hidden border border-[var(--border-color)] relative">

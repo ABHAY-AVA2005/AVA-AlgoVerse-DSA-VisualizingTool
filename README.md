@@ -14,11 +14,15 @@ It delivers step-by-step algorithm execution, real-time performance insights, an
 
 * **Interactive DSA Visualizations** — High-fidelity rendering of memory blocks, nodes, and connections
 * **Real-Time Execution Engine** — Step-by-step control with granular playback (target latency ~12ms)
+* **Audio Gamification** — Algorithms audibly synthesized via the Web Audio API based on data values
+* **Live Code Snippets** — Watch actual Java code execute step-by-step alongside the visualization in real-time
+* **Global Speed Controls** — Fine-tune visualization speed dynamically with a master UI slider
+* **Auto-Balancing AVL Trees** — Fully animated self-balancing trees with real-time LL, LR, RR, and RL rotations
+* **Mobile Responsiveness** — A clean, optimized UI that works beautifully across all devices and screen sizes
 * **Performance Analytics** — Live display of time-complexity intuition (Big-O, Ω, Θ during execution)
 * **CPU Scheduling Simulator** — OS-level scheduling with dynamic Gantt charts
 * **Graph & Pathfinding Engine** — Traversals and shortest-path visualization
 * **Cyberpunk / Neo-Futuristic UI** — High-focus, command-center-style interface
-* **Modern Frontend Architecture** — Built with production-grade tooling
 
 ---
 
@@ -27,25 +31,21 @@ It delivers step-by-step algorithm execution, real-time performance insights, an
 ### 🔢 Data Structures
 
 **Linear**
-
 * Dynamic Arrays
 * Stacks (LIFO)
 * Queues (FIFO)
 
 **Linked**
-
 * Singly Linked Lists
 * Doubly Linked Lists
 * Circular Linked Lists
 
 **Hashing**
-
 * Key-Value Mapping
 * Collision Handling (Chaining)
 
 **Hierarchical**
-
-* Trees (Binary Search Trees)
+* Trees (Binary Search Trees, **AVL Trees**)
 * Graphs (Adjacency-based Networks)
 
 ---
@@ -53,32 +53,27 @@ It delivers step-by-step algorithm execution, real-time performance insights, an
 ### 🧠 Algorithm Engines
 
 **Sorting**
-
 * Bubble Sort
 * Selection Sort
 * Insertion Sort
 * Merge Sort
 * Quick Sort
+* Heap Sort
 
 **Searching**
-
 * Linear Search
 * Binary Search
 
 **Graph Theory**
-
 * Breadth-First Search (BFS)
 * Depth-First Search (DFS)
 * Dijkstra’s Shortest Path Algorithm
 
 **Operating Systems — CPU Scheduling**
-
 * First-Come, First-Served (FCFS)
 * Shortest Job First (SJF)
 * Priority Scheduling
 * Round Robin
-
-Advanced trees, complexity comparison tools, and analytics export are actively under development.
 
 ---
 
@@ -100,7 +95,6 @@ AVA-AlgoVerse-DSA-VisualizingTool
 
 * public — Static assets and site icons
 * src
-
   * assets — Images and media
   * components — Reusable UI blocks (Modals, Badges, Logic Matrix)
   * lib — Shared logic and utilities
@@ -117,14 +111,20 @@ AVA-AlgoVerse-DSA-VisualizingTool
 ## ⚙️ Installation & Setup
 
 1. **Clone the repository**
-   git clone [https://github.com/ABHAY-AVA2005/AVA-AlgoVerse-DSA-VisualizingTool.git](https://github.com/ABHAY-AVA2005/AVA-AlgoVerse-DSA-VisualizingTool.git)
+   ```sh
+   git clone https://github.com/ABHAY-AVA2005/AVA-AlgoVerse-DSA-VisualizingTool.git
    cd AVA-AlgoVerse-DSA-VisualizingTool
+   ```
 
 2. **Install dependencies**
+   ```sh
    npm install
+   ```
 
 3. **Run the development server**
+   ```sh
    npm run dev
+   ```
 
 4. **Open in browser**
    [http://localhost:5173](http://localhost:5173)
@@ -167,7 +167,7 @@ AVA-AlgoVerse follows an open-architecture philosophy.
 
 1. Fork the repository
 2. Create a feature branch
-   git checkout -b feature/NewAlgorithm
+   `git checkout -b feature/NewAlgorithm`
 3. Commit changes using clean, meaningful messages
 4. Push the branch and open a Pull Request
 

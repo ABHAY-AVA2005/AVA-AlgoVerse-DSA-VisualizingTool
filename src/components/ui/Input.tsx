@@ -7,16 +7,36 @@ interface InputProps {
   placeholder?: string;
   className?: string;
   type?: string;
+  accent?: string;
 }
 
-export const Input: React.FC<InputProps> = ({ value, onChange, placeholder, className, type="text" }) => (
-  <div className="relative group w-full">
-    <input 
-      type={type} 
-      value={value} 
-      onChange={(e) => onChange(e.target.value)} 
-      placeholder={placeholder} 
-      className={cn("w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg px-3 py-2.5 text-xs text-[var(--text-primary)] placeholder:text-neutral-500 focus:outline-none focus:border-cyan-500/50 focus:shadow-[0_0_20px_-5px_rgba(34,211,238,0.1)] font-mono transition-all", className)} 
+export const Input: React.FC<InputProps> = ({
+  value, onChange, placeholder, className, type = 'text', accent
+}) => (
+  <div className="relative w-full group">
+    <input
+      type={type}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      className={cn(
+        "w-full rounded-[var(--radius-md)] px-3 py-2.5 text-[11px] font-mono transition-all duration-200 outline-none",
+        "placeholder:text-[var(--text-muted)]",
+        className
+      )}
+      style={{
+        background: 'var(--bg-primary)',
+        border: '1px solid var(--border-color)',
+        color: 'var(--text-primary)',
+      }}
+      onFocus={(e) => {
+        e.currentTarget.style.borderColor = accent || 'rgba(34,211,238,0.4)';
+        e.currentTarget.style.background = 'var(--bg-tertiary)';
+      }}
+      onBlur={(e) => {
+        e.currentTarget.style.borderColor = 'var(--border-color)';
+        e.currentTarget.style.background = 'var(--bg-primary)';
+      }}
     />
   </div>
 );

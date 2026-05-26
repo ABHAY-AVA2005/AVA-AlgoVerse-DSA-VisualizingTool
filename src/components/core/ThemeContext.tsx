@@ -1,64 +1,116 @@
 import React from 'react';
 
-export const ThemeContext = React.createContext({ isDark: true, toggleTheme: () => {} });
+export const ThemeContext = React.createContext({ isDark: true, toggleTheme: () => {}, speedFactor: 1, setSpeedFactor: (val: number) => {} });
 
 export const GlobalStyles = () => (
   <style>{`
-    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100..800&display=swap');
-    
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;500;600;700;800&display=swap');
+
     :root {
-      --bg-primary: #050505;
-      --bg-secondary: #0A0A0A;
-      --text-primary: #e5e5e5;
-      --text-secondary: #a3a3a3;
-      --primary: #22d3ee;
-      --border-color: rgba(255, 255, 255, 0.08);
-      --card-bg: rgba(5, 5, 5, 0.6);
+      /* --- Surfaces --- */
+      --bg-primary: #08090C;
+      --bg-secondary: #0D0F14;
+      --bg-tertiary: #111318;
+      --bg-elevated: #161921;
+
+      /* --- Text --- */
+      --text-primary: #E8EAF0;
+      --text-secondary: #6B7280;
+      --text-muted: #3D4149;
+
+      /* --- Brand accent (Arrays / default) --- */
+      --primary: #22D3EE;
+      --primary-dim: rgba(34, 211, 238, 0.12);
+      --primary-glow: rgba(34, 211, 238, 0.25);
+
+      /* --- Per-module accent palette --- */
+      --accent-arrays:  #22D3EE;
+      --accent-ll:      #A78BFA;
+      --accent-search:  #34D399;
+      --accent-sorting: #F59E0B;
+      --accent-hashing: #F472B6;
+      --accent-stack:   #60A5FA;
+      --accent-tree:    #4ADE80;
+      --accent-graph:   #FB923C;
+      --accent-sched:   #E879F9;
+
+      /* --- Borders --- */
+      --border-color: rgba(255, 255, 255, 0.06);
+      --border-active: rgba(255, 255, 255, 0.14);
+
+      /* --- Card surfaces --- */
+      --card-bg: rgba(13, 15, 20, 0.85);
+      --card-bg-hover: rgba(22, 25, 33, 0.9);
+
+      /* --- Typography --- */
+      --font-display: 'Syne', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+
+      /* --- Radius --- */
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --radius-xl: 24px;
     }
 
     [data-theme='light'] {
-      --bg-primary: #ffffff;
-      --bg-secondary: #f6f8fa;
-      --text-primary: #1f2328;
-      --text-secondary: #656d76;
-      --primary: #0969da;
-      --border-color: #d0d7de;
-      --card-bg: rgba(255, 255, 255, 0.85);
+      --bg-primary: #F6F9FC;
+      --bg-secondary: #FFFFFF;
+      --bg-tertiary: #E3E8EE;
+      --bg-elevated: #FFFFFF;
+      --text-primary: #1A1F36;
+      --text-secondary: #4F566B;
+      --text-muted: #8792A2;
+      --primary: #635BFF;
+      --primary-dim: rgba(99, 91, 255, 0.08);
+      --primary-glow: rgba(99, 91, 255, 0.15);
+      --border-color: rgba(26, 31, 54, 0.08);
+      --border-active: rgba(26, 31, 54, 0.15);
+      --card-bg: rgba(255, 255, 255, 0.65);
+      --card-bg-hover: rgba(255, 255, 255, 0.95);
     }
 
-    body, button, a, input, select, textarea {
-      cursor: none !important;
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html, body {
+      overflow-x: hidden;
+    }
+    body {
       background-color: var(--bg-primary);
       color: var(--text-primary);
       margin: 0;
       padding: 0;
+      font-family: var(--font-mono);
+      -webkit-font-smoothing: antialiased;
       transition: background-color 0.3s ease, color 0.3s ease;
     }
 
-    .font-mono { font-family: 'JetBrains Mono', monospace !important; }
 
-    .spotlight {
-      background: radial-gradient(
-        circle at 50% 0%, 
-        var(--primary) 0%, 
-        transparent 60%
-      );
-      opacity: 0.15;
-      pointer-events: none;
+
+    .font-display { font-family: var(--font-display) !important; }
+    .font-mono    { font-family: var(--font-mono) !important; }
+
+    .grid-bg {
+      background-image:
+        linear-gradient(to right, rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 40px 40px;
     }
 
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: var(--bg-secondary); }
-    ::-webkit-scrollbar-thumb { background: var(--text-secondary); border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 2px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
+
+    ::selection { background: var(--primary-dim); }
   `}</style>
 );
 
 export const THEME = {
-  bg: "bg-[var(--bg-primary)]",
-  sidebar: "bg-[var(--bg-secondary)]/80 backdrop-blur-2xl border-b lg:border-b-0 lg:border-r border-[var(--border-color)] shadow-[5px_0_40px_-10px_rgba(0,0,0,0.1)]", 
-  canvas: "bg-[var(--bg-primary)] relative overflow-hidden transition-colors duration-300",
-  card: "bg-[var(--card-bg)] border border-[var(--border-color)]",
-  text: "text-[var(--text-primary)]",
-  textMuted: "text-[var(--text-secondary)]"
+  bg:        "bg-[var(--bg-primary)]",
+  sidebar:   "bg-[var(--bg-secondary)] border-r border-[var(--border-color)]",
+  canvas:    "bg-[var(--bg-primary)] relative overflow-hidden",
+  card:      "bg-[var(--card-bg)] border border-[var(--border-color)] rounded-[var(--radius-lg)]",
+  text:      "text-[var(--text-primary)]",
+  textMuted: "text-[var(--text-secondary)]",
 };

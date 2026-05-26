@@ -1,0 +1,2 @@
+- [x] Update SystemCursor.tsx to use theme-aware colors for visibility in light mode
+- [x] Remove auto-scroll logic for top edge in SystemCursor.tsx

@@ -1,55 +1,109 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Activity } from 'lucide-react';
-import { cn } from '../../lib/utils';
-import { THEME } from '../core/ThemeContext';
 
 interface ComplexityData {
-  time: {
-    best: string;
-    avg: string;
-    worst: string;
-  };
+  time: { best: string; avg: string; worst: string; };
   space: string;
   note?: string;
 }
 
 interface ComplexityHUDProps {
   data: ComplexityData;
+  accent?: string;
 }
 
-export const ComplexityHUD: React.FC<ComplexityHUDProps> = ({ data }) => (
-  <motion.div 
-    initial={{ opacity: 0, scale: 0.95 }}
-    animate={{ opacity: 1, scale: 1 }}
-    whileHover={{ y: -2 }}
-    className={cn(THEME.card, "rounded-2xl p-5 space-y-4 backdrop-blur-xl relative overflow-hidden group")}
+const TIERS = [
+  { key: 'best'  as const, label: 'Best (Ω)',  color: '#10B981' },
+  { key: 'avg'   as const, label: 'Avg (Θ)',   color: 'var(--primary)' },
+  { key: 'worst' as const, label: 'Worst (O)', color: '#F43F5E' },
+];
+
+export const ComplexityHUD: React.FC<ComplexityHUDProps> = ({ data, accent }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 8 }}
+    animate={{ opacity: 1, y: 0 }}
+    className="rounded-[var(--radius-lg)] overflow-hidden"
+    style={{
+      background: 'var(--bg-tertiary)',
+      border: '1px solid var(--border-color)',
+    }}
   >
-    <div className="flex items-center gap-2 text-[10px] font-bold text-cyan-500/80 uppercase tracking-[0.2em] border-b border-[var(--border-color)] pb-3">
-      <Activity size={12} /> Performance Analytics
+    {/* Header */}
+    <div
+      className="flex items-center gap-2 px-4 py-2.5"
+      style={{ borderBottom: '1px solid var(--border-color)' }}
+    >
+      <Activity
+        size={11}
+        style={{ color: accent || 'var(--primary)' }}
+      />
+      <span
+        className="text-[9px] uppercase tracking-[0.18em]"
+        style={{ color: accent || 'var(--primary)', fontFamily: 'var(--font-mono)' }}
+      >
+        Performance Analytics
+      </span>
     </div>
-    <div className="grid grid-cols-3 gap-4">
-      <div className="flex flex-col gap-1">
-        <span className="text-[9px] text-[var(--text-secondary)] uppercase tracking-wider">Best (Ω)</span>
-        <span className="text-xs font-mono text-emerald-500 font-bold">{data.time.best}</span>
-      </div>
-      <div className="flex flex-col gap-1">
-        <span className="text-[9px] text-[var(--text-secondary)] uppercase tracking-wider">Avg (Θ)</span>
-        <span className="text-xs font-mono text-cyan-500 font-bold">{data.time.avg}</span>
-      </div>
-      <div className="flex flex-col gap-1">
-        <span className="text-[9px] text-[var(--text-secondary)] uppercase tracking-wider">Worst (O)</span>
-        <span className="text-xs font-mono text-rose-500 font-bold">{data.time.worst}</span>
-      </div>
+
+    {/* Complexity grid */}
+    <div className="grid grid-cols-3" style={{ borderColor: 'var(--border-color)' }}>
+      {TIERS.map(({ key, label, color }, idx) => (
+        <div
+          key={key}
+          className="px-3 py-3 flex flex-col gap-1.5"
+          style={{ borderRight: idx < 2 ? '1px solid var(--border-color)' : 'none' }}
+        >
+          <div className="flex items-center gap-1.5">
+            <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: color }} />
+            <span
+              className="text-[8px] uppercase tracking-wider"
+              style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}
+            >
+              {label}
+            </span>
+          </div>
+          <span
+            className="text-sm font-bold font-mono"
+            style={{ color }}
+          >
+            {data.time[key]}
+          </span>
+        </div>
+      ))}
     </div>
-    <div className="flex justify-between items-center pt-3 border-t border-[var(--border-color)]">
-      <span className="text-[10px] text-[var(--text-secondary)] uppercase tracking-wider">Space</span>
-      <span className="text-xs font-mono text-[var(--text-primary)]">{data.space}</span>
+
+    {/* Space row */}
+    <div
+      className="flex items-center justify-between px-4 py-2.5"
+      style={{ borderTop: '1px solid var(--border-color)' }}
+    >
+      <span
+        className="text-[9px] uppercase tracking-wider"
+        style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}
+      >
+        Space
+      </span>
+      <span
+        className="text-xs font-mono font-semibold"
+        style={{ color: 'var(--text-primary)' }}
+      >
+        {data.space}
+      </span>
     </div>
+
+    {/* Note */}
     {data.note && (
-      <div className="text-[10px] text-[var(--text-secondary)] bg-[var(--bg-primary)] p-2 rounded-lg border border-[var(--border-color)] font-mono leading-relaxed flex gap-2 items-start">
-         <div className="mt-0.5 w-1 h-1 rounded-full bg-cyan-500 shrink-0"></div>
-         {data.note}
+      <div
+        className="px-4 py-2.5 flex gap-2 items-start text-[10px] font-mono leading-relaxed"
+        style={{
+          borderTop: '1px solid var(--border-color)',
+          color: 'var(--text-secondary)',
+          background: 'var(--bg-secondary)',
+        }}
+      >
+        <div className="w-1 h-1 rounded-full shrink-0 mt-1.5" style={{ background: accent || 'var(--primary)' }} />
+        {data.note}
       </div>
     )}
   </motion.div>

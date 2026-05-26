@@ -40,7 +40,7 @@ export const TopBar: React.FC<TopBarProps> = ({ activeSection }) => {
                 <div className="absolute inset-0 border border-cyan-500/30 rounded" />
                 <div className="w-2 h-2 bg-cyan-500 rounded-full animate-pulse" />
             </div>
-            <span className="text-xl font-bold font-mono tracking-widest text-[var(--text-primary)] group-hover:text-cyan-500 transition-colors">
+            <span className="text-xl font-bold font-mono tracking-widest text-[var(--text-primary)] group-hover:text-[var(--primary)] transition-colors">
                 AVA
             </span>
          </div>
@@ -69,7 +69,7 @@ export const TopBar: React.FC<TopBarProps> = ({ activeSection }) => {
                className="fixed inset-y-0 right-0 w-full sm:w-80 bg-[var(--bg-secondary)] border-l border-[var(--border-color)] z-[70] flex flex-col shadow-2xl backdrop-blur-2xl"
              >
                 <div className="p-6 flex justify-between items-center border-b border-[var(--border-color)]">
-                    <span className="text-lg font-bold font-mono tracking-widest text-cyan-500">NAVIGATION</span>
+                    <span className="text-lg font-bold font-mono tracking-widest text-[var(--primary)]">NAVIGATION</span>
                     <button onClick={() => setIsOpen(false)} className="text-[var(--text-secondary)] hover:text-[var(--text-primary)]"><X size={20} /></button>
                 </div>
                 <div className="flex-1 overflow-y-auto py-4">
@@ -79,7 +79,7 @@ export const TopBar: React.FC<TopBarProps> = ({ activeSection }) => {
                         onClick={() => scrollTo(section.id)}
                         className={cn(
                            "w-full text-left px-8 py-4 flex items-center gap-4 hover:bg-[var(--bg-primary)] transition-all group font-mono relative overflow-hidden",
-                           activeSection === section.id ? "text-cyan-500 bg-cyan-500/5" : "text-[var(--text-secondary)]"
+                           activeSection === section.id ? "text-[var(--primary)] bg-[var(--primary-dim)]" : "text-[var(--text-secondary)]"
                         )}
                       >
                           {activeSection === section.id && <div className="absolute left-0 top-0 bottom-0 w-1 bg-cyan-500" />}
