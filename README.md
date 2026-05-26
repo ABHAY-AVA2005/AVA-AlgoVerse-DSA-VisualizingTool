@@ -1,196 +1,124 @@
-# 🌌 AVA-AlgoVerse — DSA Visualizer
+# 🌌 AlgoVerse — DSA Visualizer
 
-### *Algorithm Visualization Architecture (AVA) // System v3.0 // Online*
+### *Visualise and Customise Data Structures & Algorithms on Your Own Terms*
 
-**AVA (Algorithm Visualization Architecture)** is a high-precision, neo-futuristic platform designed to bridge the gap between **abstract data structures** and **human visual intuition**.
-It delivers step-by-step algorithm execution, real-time performance insights, and immersive cyberpunk UI aesthetics tailored for deep technical understanding.
+**AlgoVerse** is a high-precision, interactive neo-futuristic platform designed to bridge the gap between **abstract data structures** and **human visual intuition**. It allows students and developers to dynamically manipulate structures, run real-time execution steps, hear algorithm syntheses, and analyze time complexities inside an immersive command-center UI.
 
-**Live Demo:**
-[https://ava-algo-verse-dsa-visualizing-tool.vercel.app/](https://ava-algo-verse-dsa-visualizing-tool.vercel.app/)
-
----
-
-## 📌 Key Highlights
-
-* **Interactive DSA Visualizations** — High-fidelity rendering of memory blocks, nodes, and connections
-* **Real-Time Execution Engine** — Step-by-step control with granular playback (target latency ~12ms)
-* **Audio Gamification** — Algorithms audibly synthesized via the Web Audio API based on data values
-* **Live Code Snippets** — Watch actual Java code execute step-by-step alongside the visualization in real-time
-* **Global Speed Controls** — Fine-tune visualization speed dynamically with a master UI slider
-* **Auto-Balancing AVL Trees** — Fully animated self-balancing trees with real-time LL, LR, RR, and RL rotations
-* **Mobile Responsiveness** — A clean, optimized UI that works beautifully across all devices and screen sizes
-* **Performance Analytics** — Live display of time-complexity intuition (Big-O, Ω, Θ during execution)
-* **CPU Scheduling Simulator** — OS-level scheduling with dynamic Gantt charts
-* **Graph & Pathfinding Engine** — Traversals and shortest-path visualization
-* **Cyberpunk / Neo-Futuristic UI** — High-focus, command-center-style interface
+### 🔗 Live Deployment Link
+* **Production Deployment:** [https://ava-algo-verse-dsa-visualizing-tool.vercel.app/](https://ava-algo-verse-dsa-visualizing-tool.vercel.app/)
 
 ---
 
-## 🧩 Algorithms & Concepts Covered
+## 📌 Features & Modules (What They Do)
 
-### 🔢 Data Structures
+### 1. 🚀 Neo-Futuristic Homepage & 3D DSA Carousel
+* **3D Rotating Carousel:** A stunning 3D projection ring of modular DSA cards (Arrays, Linked Lists, Stacks, Queues, Trees, Graphs, Hashing) rotates infinitely in virtual space on the homepage.
+* **Core Mission Callout:** Declares a loud, explicit commitment to empowering learners to master data structures and algorithms completely on their own terms.
+* **Creator Portal:** A sleek, circular floating avatar stacked beautifully on the bottom-right corner of the homepage (directly above the AI Assistant button) that triggers a fully detailed profile containing profile links and social handles.
 
-**Linear**
-* Dynamic Arrays
-* Stacks (LIFO)
-* Queues (FIFO)
+### 2. 💻 Context-Aware Resizable Code Panels
+* **Dynamic Code Syncing:** Displays precise, step-by-step Java code snippets running side-by-side with active algorithm animations.
+* **Precision Drag-Protection:** The panel can be dragged freely within its designated visualization section but is bound mathematically so it can never be lost or dragged off-screen.
+* **Draggable Header Grips:** Dragging triggers exclusively on the top title bar to prevent accidental shifts when resizing or interacting.
+* **Double-Axis Resizing:** Users can scale both width and height dynamically using a native resize handle at the bottom-right corner.
+* **Toggles & Collapse Safety:** The panel is protected from deletion; clicking the colored control dots collapses the code window into a compact header without losing position.
 
-**Linked**
-* Singly Linked Lists
-* Doubly Linked Lists
-* Circular Linked Lists
+### 3. 🎨 Immersive Visualization Engines
+* **Arrays (Static & Dynamic):** Add, delete, and modify items on contiguous indices with glowing active indicators.
+* **Linked Lists (Singly, Doubly, & Circular):** Track node allocations, dynamic pointer relocations, and linear list traversals.
+* **Stacks & Queues:** Watch First-In-First-Out (FIFO) queue buffers and Last-In-First-Out (LIFO) stack pushes/pops.
+* **Self-Balancing AVL Trees:** Fully animated binary search trees showcasing recursive insertions, balance factor calculations, and real-time Left-Left, Left-Right, Right-Right, and Right-Left rotations.
+* **Graphs & Pathfinding:** Plot node networks and visualize Breadth-First Search (BFS), Depth-First Search (DFS), and Dijkstra's Shortest Path algorithms with dynamic state highlighting.
+* **Collision-Handling Hashing:** Interactive chaining arrays and linear probing tables demonstrating key-value hashing logic.
+* **CPU Scheduling Simulator:** Dynamic Gantt charts displaying Round Robin, FCFS, SJF, and Priority OS-level processes.
 
-**Hashing**
-* Key-Value Mapping
-* Collision Handling (Chaining)
+### 4. 🎹 Audio Gamification Engine
+* **Synthesized Audio Cues:** Leverages the browser's Web Audio API to map numerical values directly into sound frequencies. Elements sing in real-time as they are compared, swapped, accessed, or successfully inserted.
 
-**Hierarchical**
-* Trees (Binary Search Trees, **AVL Trees**)
-* Graphs (Adjacency-based Networks)
-
----
-
-### 🧠 Algorithm Engines
-
-**Sorting**
-* Bubble Sort
-* Selection Sort
-* Insertion Sort
-* Merge Sort
-* Quick Sort
-* Heap Sort
-
-**Searching**
-* Linear Search
-* Binary Search
-
-**Graph Theory**
-* Breadth-First Search (BFS)
-* Depth-First Search (DFS)
-* Dijkstra’s Shortest Path Algorithm
-
-**Operating Systems — CPU Scheduling**
-* First-Come, First-Served (FCFS)
-* Shortest Job First (SJF)
-* Priority Scheduling
-* Round Robin
+### 5. ⚡ Granular Speed & Step Playback Controls
+* **Granular Speed Bar:** A master speed divider allowing you to fast-forward execution or slow it down into smooth micro-animations.
+* **Interactive Step Mode:** Toggle manual step-by-step mode to control transitions line-by-line using a dedicated control dock.
 
 ---
 
 ## 🖥️ Tech Stack
 
-* **Frontend:** React + TypeScript
-* **Build Tool:** Vite
-* **Styling:** Tailwind CSS
-* **Animations:** Framer Motion + CSS State Transitions
+* **Core & Logic:** React (18+) + TypeScript
+* **Build Tooling:** Vite (v7.3) for rapid client compiles
+* **Styling & Layouts:** Vanilla CSS + Tailwind CSS utilities
+* **Animations:** Framer Motion (for physics-based UI transitions & 3D carousel)
+* **Sound Design:** Web Audio API (custom sound wave oscillators)
 * **Icons:** Lucide React
-* **Linting:** ESLint
-* **Deployment:** Vercel
+* **Deployment:** Vercel (CI/CD pipeline synced with `main` branch)
 
 ---
 
 ## 📂 Project Structure
 
-AVA-AlgoVerse-DSA-VisualizingTool
-
-* public — Static assets and site icons
-* src
-  * assets — Images and media
-  * components — Reusable UI blocks (Modals, Badges, Logic Matrix)
-  * lib — Shared logic and utilities
-  * App.tsx — Application routing and layout
-  * main.tsx — Entry point
-  * index.css — Global styles and Tailwind directives
-* index.html — Root HTML template
-* tailwind.config.js — Theme and styling configuration
-* tsconfig.json — TypeScript rules
-* vite.config.ts — Build and plugin settings
+```text
+AVA-ALGOVERSE-DSA-Visualizer-main
+├── public/                     # Static icons and assets
+└── src/
+    ├── assets/                 # Profile images and JPG resources
+    ├── components/
+    │   ├── core/               # AIAssistant & CreatorBadge widgets
+    │   ├── layouts/            # Navigation sidebar and footer
+    │   ├── sections/           # Modular DSA viz pages (Array, Hash, Sched, LL...)
+    │   └── ui/                 # Reusable premium HUDs, Select, Inputs, Panels
+    ├── lib/
+    │   ├── utils.ts            # Timing, calculation, and delay helpers
+    │   └── SoundEngine.ts      # Oscillator audio gamification engine
+    ├── App.tsx                 # Core section controller
+    ├── main.tsx                # Application bootstrap
+    └── index.css               # Global styling directives
+```
 
 ---
 
-## ⚙️ Installation & Setup
+## ⚙️ Installation & Run Guide
 
-1. **Clone the repository**
+Follow these steps to spin up the development workspace locally:
+
+1. **Clone the Repo:**
    ```sh
-   git clone https://github.com/ABHAY-AVA2005/AVA-AlgoVerse-DSA-VisualizingTool.git
-   cd AVA-AlgoVerse-DSA-VisualizingTool
+   git clone https://github.com/ABHAY-AVA2005/AVA-AlgoVerse-DSA-Visualizer.git
+   cd AVA-AlgoVerse-DSA-Visualizer
    ```
 
-2. **Install dependencies**
+2. **Install Workspace Packages:**
    ```sh
    npm install
    ```
 
-3. **Run the development server**
+3. **Launch Dev Server:**
    ```sh
    npm run dev
    ```
 
-4. **Open in browser**
-   [http://localhost:5173](http://localhost:5173)
-
----
-
-## 🚀 Deployment
-
-The project is continuously deployed using **Vercel**.
-
-* Production deployments are auto-triggered from the `main` branch
-* Preview deployments are enabled for feature branches and pull requests
-
----
-
-## 🧠 Design Philosophy
-
-AVA-AlgoVerse is built on the principle that:
-
-**Visualizing abstraction reduces cognitive load and increases long-term retention.**
-
-The cyberpunk theme is intentional—not decorative. It creates a high-focus, command-center-like environment similar to professional engineering dashboards, improving engagement and comprehension during complex algorithm execution.
-
----
-
-## 🛣️ Roadmap
-
-* Core DSA Visualizations (v1.0)
-* CPU Scheduling Module (v2.0)
-* System v3.0 Architecture (Current)
-* Advanced Tree Visualizations (AVL, Red-Black)
-* Algorithm Complexity Comparison Graphs
-* Exportable Performance and Execution Reports
+4. **Access in Browser:**
+   Open [http://localhost:5173](http://localhost:5173) in your web browser.
 
 ---
 
 ## 🤝 Contributing
 
-AVA-AlgoVerse follows an open-architecture philosophy.
-
-1. Fork the repository
-2. Create a feature branch
-   `git checkout -b feature/NewAlgorithm`
-3. Commit changes using clean, meaningful messages
-4. Push the branch and open a Pull Request
+We welcome structural additions and clean feature proposals:
+1. Fork this project.
+2. Create a clean feature branch: `git checkout -b feature/CoolAlgorithm`.
+3. Commit with a meaningful, descriptive message.
+4. Open a Pull Request for review.
 
 ---
 
-## 👨‍💻 Author
+## 👨‍💻 Creator & Maintainer
 
-Abhay Varshit Aripirala
-B.Tech Computer Science & Engineering
-St. Peter’s Engineering College
+**Abhay Varshit Aripirala**  
+*Computer Science & Engineering*  
+St. Peter’s Engineering College  
 
-GitHub: [https://github.com/ABHAY-AVA2005](https://github.com/ABHAY-AVA2005)
-
----
-
-## ⭐ Support
-
-If you find this project useful:
-
-* Star the repository
-* Report issues
-* Suggest new features or algorithms
+* **GitHub:** [@ABHAY-AVA2005](https://github.com/ABHAY-AVA2005)
+* **LinkedIn:** [Abhay Varshit Aripirala](https://www.linkedin.com/in/abhay-varshit-ava-9242a1286/)
 
 ---
 
-AVA-AlgoVerse — Where Algorithms Come Alive.
+🌌 *AlgoVerse — Where Abstract Algorithms Come Alive.*
