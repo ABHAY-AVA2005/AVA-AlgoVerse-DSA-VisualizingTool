@@ -7,6 +7,8 @@ import { StepControl } from '../ui/StepControl';
 import { ComplexityHUD } from '../ui/ComplexityHUD';
 import { SectionHeader } from '../ui/SectionHeader';
 import { GridBackground } from '../ui/GridBackground';
+import { CodePanel } from '../ui/CodePanel';
+import { soundEngine } from '../../lib/SoundEngine';
 import { cn, parseValue, wait } from '../../lib/utils';
 
 const ACCENT = 'var(--accent-ll)';
@@ -16,6 +18,46 @@ const LL_COMPLEXITY = {
   sll: { time: { best: 'Ω(1)', avg: 'Θ(n)', worst: 'O(n)' }, space: 'O(n)', note: 'Singly Linked.' },
   dll: { time: { best: 'Ω(1)', avg: 'Θ(n)', worst: 'O(n)' }, space: 'O(n)', note: 'Doubly Linked.' },
   cll: { time: { best: 'Ω(1)', avg: 'Θ(n)', worst: 'O(n)' }, space: 'O(n)', note: 'Circular.' }
+};
+
+const CODE_SNIPPETS: Record<string, string[]> = {
+  sll: [
+    "void insertTail(int val) {",
+    "    Node newNode = new Node(val);",
+    "    if (head == null) head = newNode;",
+    "    else {",
+    "        Node temp = head;",
+    "        while (temp.next != null) temp = temp.next;",
+    "        temp.next = newNode;",
+    "    }",
+    "}"
+  ],
+  dll: [
+    "void insertTail(int val) {",
+    "    Node newNode = new Node(val);",
+    "    if (head == null) head = newNode;",
+    "    else {",
+    "        Node temp = head;",
+    "        while (temp.next != null) temp = temp.next;",
+    "        temp.next = newNode;",
+    "        newNode.prev = temp;",
+    "    }",
+    "}"
+  ],
+  cll: [
+    "void insertTail(int val) {",
+    "    Node newNode = new Node(val);",
+    "    if (head == null) {",
+    "        head = newNode;",
+    "        newNode.next = head;",
+    "    } else {",
+    "        Node temp = head;",
+    "        while (temp.next != head) temp = temp.next;",
+    "        temp.next = newNode;",
+    "        newNode.next = head;",
+    "    }",
+    "}"
+  ]
 };
 
 interface LinkedListSectionProps {
@@ -31,6 +73,7 @@ export const LinkedListSection: React.FC<LinkedListSectionProps> = ({ id }) => {
   const [searchVal, setSearchVal] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [stepMode, setStepMode] = useState(false);
+  const [activeLine, setActiveLine] = useState<number | null>(null);
   const nextStepRef = useRef<(() => void) | null>(null);
   const stopRef = useRef(false);
 
@@ -56,8 +99,45 @@ export const LinkedListSection: React.FC<LinkedListSectionProps> = ({ id }) => {
   };
 
   const nextStep = () => { if (nextStepRef.current) { nextStepRef.current(); nextStepRef.current = null; } };
-  const insertTail = () => { if (list.length >= 10) { alert("Max input size is 10"); return; } if(val !== ""){setList([...list, parseValue(val)]); setVal('');} };
-  const deleteHead = () => { if(list.length) setList(list.slice(1)); };
+  
+  const insertTail = async () => { 
+    if (list.length >= 10) { alert("Max input size is 10"); return; } 
+    if(val === "") return;
+    stopRef.current = false;
+    const newVal = parseValue(val);
+    setActiveLine(0); await proceed(100);
+    setActiveLine(1); await proceed(100);
+
+    if (list.length === 0) {
+      setActiveLine(2); await proceed(100);
+      setList([newVal]);
+      if (typeof newVal === 'number') soundEngine.playValue(newVal);
+      if (type === 'cll') { setActiveLine(4); await proceed(100); }
+    } else {
+      setActiveLine(4); await proceed(100);
+      for (let i = 0; i < list.length; i++) {
+         setActiveLine(5);
+         setActiveIdx(i);
+         if (typeof list[i] === 'number') soundEngine.playValue(list[i] as number);
+         await proceed(200);
+      }
+      setActiveLine(6); await proceed(100);
+      setList([...list, newVal]);
+      if (typeof newVal === 'number') soundEngine.playValue(newVal);
+      if (type === 'dll') { setActiveLine(7); await proceed(100); }
+      if (type === 'cll') { setActiveLine(8); await proceed(100); }
+    }
+    setActiveIdx(null);
+    setVal('');
+    setActiveLine(null);
+  };
+  
+  const deleteHead = async () => { 
+    if(list.length) {
+      if (typeof list[0] === 'number') soundEngine.playValue(list[0] as number);
+      setList(list.slice(1)); 
+    }
+  };
 
   const search = async () => {
     const t = parseValue(searchVal);
@@ -68,10 +148,12 @@ export const LinkedListSection: React.FC<LinkedListSectionProps> = ({ id }) => {
     try {
       for(let i=0; i<list.length; i++) {
         setActiveIdx(i);
+        if (typeof list[i] === 'number') soundEngine.playValue(list[i] as number);
         await proceed();
         if(list[i] === t) {
           setMsg(`Found ${t} at Index ${i}`);
           setIsSearching(false);
+          soundEngine.playSuccess();
           return;
         }
       }
@@ -149,12 +231,12 @@ export const LinkedListSection: React.FC<LinkedListSectionProps> = ({ id }) => {
 
       {/* RIGHT: Canvas */}
       <div
-        className="flex-1 min-h-[60vh] lg:min-h-0 relative flex items-center justify-center p-6 md:p-12 overflow-x-auto"
+        className="flex-1 min-h-[60vh] lg:min-h-0 relative flex flex-col items-center justify-end overflow-x-auto"
         style={{ background: 'var(--bg-primary)' }}
       >
         {/* Accent radial glow */}
         <div
-          className="absolute pointer-events-none"
+          className="absolute pointer-events-none z-0"
           style={{
             width: 600,
             height: 600,
@@ -166,8 +248,17 @@ export const LinkedListSection: React.FC<LinkedListSectionProps> = ({ id }) => {
           }}
         />
         <GridBackground />
-        {/* Linked list nodes */}
-        <div className="flex items-center flex-wrap gap-0 justify-center max-w-4xl relative z-10">
+        
+        <div className="flex flex-col items-center justify-end w-full h-[70%] lg:h-[80%] max-w-4xl px-4 lg:px-8 pb-10 z-10 gap-6">
+          {/* Code Panel */}
+          {CODE_SNIPPETS[type] && (
+            <div className="z-30 w-full flex justify-center mb-10">
+              <CodePanel code={CODE_SNIPPETS[type]} activeLine={activeLine} accent={ACCENT} />
+            </div>
+          )}
+
+          {/* Linked list nodes */}
+          <div className="flex items-center flex-wrap gap-0 justify-center max-w-4xl relative z-10 mt-auto">
           <AnimatePresence>
             {list.map((node, i) => (
               <div key={`${i}-${node}`} className="flex items-center">
@@ -223,7 +314,8 @@ export const LinkedListSection: React.FC<LinkedListSectionProps> = ({ id }) => {
                 )}
               </div>
             ))}
-          </AnimatePresence>
+            </AnimatePresence>
+          </div>
         </div>
       </div>
     </section>

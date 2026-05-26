@@ -1,28 +1,29 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Github, Linkedin, User, X } from 'lucide-react';
+import abhayImg from '../../assets/Abhay.jpg';
 
 export const CreatorBadge = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <motion.div 
-      initial={{ opacity: 0, x: -50 }}
+      initial={{ opacity: 0, x: 50 }}
       animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -50 }}
-      className="fixed bottom-10 left-10 z-[1000] flex flex-col items-start no-scroll"
+      exit={{ opacity: 0, x: 50 }}
+      className="fixed bottom-24 right-8 z-[1000] flex flex-col items-end no-scroll"
     >
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.8, x: -20, y: 20 }}
+            initial={{ opacity: 0, scale: 0.8, x: 20, y: 20 }}
             animate={{ opacity: 1, scale: 1, x: 0, y: 0 }}
-            exit={{ opacity: 0, scale: 0.8, x: -20, y: 20 }}
+            exit={{ opacity: 0, scale: 0.8, x: 20, y: 20 }}
             className="mb-6 w-80 overflow-hidden rounded-3xl border border-[var(--border-color)] bg-[var(--bg-secondary)]/90 p-6 backdrop-blur-2xl shadow-2xl"
           >
             <div className="flex items-center gap-4 mb-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-cyan-500/50 bg-cyan-500/10 overflow-hidden">
-                <img src="Abhay.png" alt="A" className="w-full h-full object-cover" />
+                <img src={abhayImg} alt="Abhay" className="w-full h-full object-cover" />
               </div>
               <div>
                 <h3 className="text-[var(--text-primary)] font-bold font-mono text-sm leading-none">
@@ -40,7 +41,7 @@ export const CreatorBadge = () => {
 
             <div className="flex gap-2">
               <a 
-                href="https://github.com/ABHAY-AVA2005/AVA-ALGOVERSE-DSA-Visualizer" 
+                href="https://github.com/ABHAY-AVA2005" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-color)] text-[10px] text-[var(--text-primary)] font-bold uppercase hover:bg-[var(--border-active)] transition-colors"
@@ -68,7 +69,7 @@ export const CreatorBadge = () => {
           {isOpen ? (
             <X size={20} />
           ) : (
-            <User size={20} className="text-[var(--primary)]" />
+            <img src={abhayImg} alt="Creator" className="w-full h-full object-cover animate-fade-in" />
           )}
         </div>
         <span className="pr-6 text-[10px] font-black tracking-[0.2em] text-[var(--text-primary)] uppercase">

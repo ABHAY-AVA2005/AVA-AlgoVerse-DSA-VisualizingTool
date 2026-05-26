@@ -7,12 +7,58 @@ import { StepControl } from '../ui/StepControl';
 import { ComplexityHUD } from '../ui/ComplexityHUD';
 import { SectionHeader } from '../ui/SectionHeader';
 import { GridBackground } from '../ui/GridBackground';
+import { CodePanel } from '../ui/CodePanel';
+import { soundEngine } from '../../lib/SoundEngine';
 import { cn, wait } from '../../lib/utils';
 
 const ACCENT = 'var(--accent-graph)';
 const ACCENT_HEX = '#FB923C';
 
 const GRAPH_COMPLEXITY = { dijkstra: { time: { best: 'Ω(E log V)', avg: 'Θ(E log V)', worst: 'O(E log V)' }, space: 'O(V + E)', note: 'Shortest Path.' }, bfs: { time: { best: 'Ω(V+E)', avg: 'Θ(V+E)', worst: 'O(V+E)' }, space: 'O(V)', note: 'Unweighted.' }, dfs: { time: { best: 'Ω(V+E)', avg: 'Θ(V+E)', worst: 'O(V+E)' }, space: 'O(V)', note: 'Topology.' } };
+
+const CODE_SNIPPETS: Record<string, string[]> = {
+  bfs: [
+    "void bfs(Node start) {",
+    "    Queue<Node> q = new LinkedList<>();",
+    "    q.add(start);",
+    "    visited.add(start);",
+    "    while (!q.isEmpty()) {",
+    "        Node curr = q.poll();",
+    "        for (Node neighbor : adj.get(curr)) {",
+    "            if (!visited.contains(neighbor)) {",
+    "                visited.add(neighbor);",
+    "                q.add(neighbor);",
+    "            }",
+    "        }",
+    "    }",
+    "}"
+  ],
+  dfs: [
+    "void dfs(Node curr) {",
+    "    if (visited.contains(curr)) return;",
+    "    visited.add(curr);",
+    "    for (Node neighbor : adj.get(curr)) {",
+    "        dfs(neighbor);",
+    "    }",
+    "}"
+  ],
+  dijkstra: [
+    "void dijkstra(Node start) {",
+    "    dist[start] = 0;",
+    "    PriorityQueue<Node> pq = new PriorityQueue<>();",
+    "    pq.add(start);",
+    "    while (!pq.isEmpty()) {",
+    "        Node curr = pq.poll();",
+    "        for (Edge e : adj.get(curr)) {",
+    "            if (dist[curr] + e.w < dist[e.to]) {",
+    "                dist[e.to] = dist[curr] + e.w;",
+    "                pq.add(e.to);",
+    "            }",
+    "        }",
+    "    }",
+    "}"
+  ]
+};
 
 interface Node {
   id: string;
@@ -44,6 +90,7 @@ export const GraphSection: React.FC<GraphSectionProps> = ({ id }) => {
   const [status, setStatus] = useState('Idle');
   const [isRunning, setIsRunning] = useState(false);
   const [stepMode, setStepMode] = useState(false);
+  const [activeLine, setActiveLine] = useState<number | null>(null);
 
   const [newNodeId, setNewNodeId] = useState('');
   const [edgeFrom, setEdgeFrom] = useState('');
@@ -81,34 +128,47 @@ export const GraphSection: React.FC<GraphSectionProps> = ({ id }) => {
     setDistances({ ...dist });
     setIsRunning(true);
     stopRef.current = false;
+    setActiveLine(0); await proceed(100);
 
     try {
+      setActiveLine(1); await proceed(100);
+      setActiveLine(2); await proceed(100);
+      setActiveLine(3); await proceed(100);
       const pq = [startNode];
       while (pq.length > 0) {
+        setActiveLine(4); await proceed(100);
         pq.sort((a, b) => dist[a] - dist[b]);
         const curr = pq.shift()!;
+        setActiveLine(5); await proceed(100);
         
         if (visited.includes(curr)) continue;
         setVisited(prev => [...prev, curr]);
         setStatus(`Expanding node ${curr}`);
+        soundEngine.playValue(curr.charCodeAt(0) * 2);
         await proceed();
 
         const adj = getAdjacency();
         for (const neighbor of adj[curr]) {
+          setActiveLine(6); await proceed(100);
           const newDist = dist[curr] + neighbor.w;
+          setActiveLine(7); await proceed(100);
           if (newDist < dist[neighbor.node]) {
             dist[neighbor.node] = newDist;
             setDistances({ ...dist });
             pq.push(neighbor.node);
             setStatus(`Relaxed ${neighbor.node} to dist ${newDist}`);
-            await proceed(300);
+            soundEngine.playValue(neighbor.node.charCodeAt(0) * 3);
+            setActiveLine(8); await proceed(100);
+            setActiveLine(9); await proceed(200);
           }
         }
       }
       setStatus('Shortest Paths Computed');
+      soundEngine.playSuccess();
     } catch (e) {
       resetAlgoState('Algorithm Aborted');
     }
+    setActiveLine(null);
     setIsRunning(false);
   };
 
@@ -122,53 +182,73 @@ export const GraphSection: React.FC<GraphSectionProps> = ({ id }) => {
     const adj = getAdjacency();
     const startNode = nodes[0]?.id;
     if (!startNode) return;
+    
+    setActiveLine(0); await proceed(100);
 
     try {
       if (algo === 'bfs') {
+        setActiveLine(1); await proceed(100);
         const queue = [startNode];
         const localVisited = new Set<string>();
+        setActiveLine(2); await proceed(100);
+        setActiveLine(3); await proceed(100);
         while (queue.length > 0) {
+          setActiveLine(4); await proceed(100);
           const curr = queue.shift()!;
           if (localVisited.has(curr)) continue;
           
           localVisited.add(curr);
           setVisited(Array.from(localVisited));
           setStatus(`Scanning ${curr}`);
-          await proceed();
+          soundEngine.playValue(curr.charCodeAt(0) * 2);
+          setActiveLine(5); await proceed();
 
           if (curr === t) {
             setStatus(`Target ${t} Found!`);
             setIsRunning(false);
+            setActiveLine(null);
+            soundEngine.playSuccess();
             return;
           }
 
           for (const n of adj[curr]) {
-            if (!localVisited.has(n.node)) queue.push(n.node);
+            setActiveLine(6); await proceed(100);
+            if (!localVisited.has(n.node)) {
+              setActiveLine(7); await proceed(100);
+              setActiveLine(8); await proceed(100);
+              queue.push(n.node);
+              setActiveLine(9); await proceed(100);
+            }
           }
         }
       } else {
         const localVisited = new Set<string>();
         const dfs = async (curr: string): Promise<boolean> => {
-          if (localVisited.has(curr) || stopRef.current) return false;
+          setActiveLine(0); await proceed(50);
+          if (localVisited.has(curr) || stopRef.current) { setActiveLine(1); await proceed(50); return false; }
           localVisited.add(curr);
           setVisited(Array.from(localVisited));
           setStatus(`Visiting ${curr}`);
-          await proceed();
+          soundEngine.playValue(curr.charCodeAt(0) * 2);
+          setActiveLine(2); await proceed();
 
           if (curr === t) return true;
 
           for (const n of adj[curr]) {
+            setActiveLine(3); await proceed(100);
+            setActiveLine(4); await proceed(100);
             if (await dfs(n.node)) return true;
           }
           return false;
         };
         const found = await dfs(startNode);
-        if (found) setStatus(`Target ${t} Found!`);
+        if (found) { setStatus(`Target ${t} Found!`); soundEngine.playSuccess(); }
         else setStatus(`Target ${t} not reachable.`);
       }
     } catch (e) {
       resetAlgoState('Search Aborted');
     }
+    setActiveLine(null);
     setIsRunning(false);
   };
 
@@ -357,23 +437,27 @@ export const GraphSection: React.FC<GraphSectionProps> = ({ id }) => {
       
       {/* RIGHT: Canvas */}
       <div
-        className="flex-1 min-h-[60vh] lg:min-h-0 relative flex items-center justify-center overflow-hidden"
+        className="flex-1 min-h-[60vh] lg:min-h-0 relative flex flex-col items-center justify-end overflow-hidden"
         style={{ background: 'var(--bg-primary)' }}
       >
-          {/* Accent radial glow */}
-          <div
-            className="absolute pointer-events-none"
-            style={{
-              width: 700,
-              height: 700,
-              borderRadius: '50%',
-              background: `radial-gradient(circle, ${ACCENT_HEX}08 0%, transparent 70%)`,
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-            }}
-          />
-          <GridBackground />
+        <div
+          className="absolute pointer-events-none z-0"
+          style={{
+            width: 600, height: 600, borderRadius: '50%',
+            background: `radial-gradient(circle, ${ACCENT_HEX}08 0%, transparent 70%)`,
+            top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+          }}
+        />
+        <GridBackground />
+
+        {/* Code Panel */}
+        {CODE_SNIPPETS[algo] && (
+          <div className="absolute bottom-8 left-8 z-30">
+            <CodePanel code={CODE_SNIPPETS[algo]} activeLine={activeLine} accent={ACCENT} />
+          </div>
+        )}
+
+        <div className="relative w-full h-full max-w-4xl min-h-[600px] flex justify-center items-center z-10">
           <div className="relative w-[600px] h-[600px] bg-[var(--bg-tertiary)] rounded-full border border-[var(--border-color)]">
             <svg className="absolute inset-0 w-full h-full overflow-visible pointer-events-none">
               {edges.map((e, i) => {
@@ -412,6 +496,7 @@ export const GraphSection: React.FC<GraphSectionProps> = ({ id }) => {
               })}
             </AnimatePresence>
           </div>
+        </div>
       </div>
     </section>
   )

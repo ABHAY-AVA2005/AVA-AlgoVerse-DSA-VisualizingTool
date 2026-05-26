@@ -8,12 +8,73 @@ import { StepControl } from '../ui/StepControl';
 import { ComplexityHUD } from '../ui/ComplexityHUD';
 import { SectionHeader } from '../ui/SectionHeader';
 import { GridBackground } from '../ui/GridBackground';
+import { CodePanel } from '../ui/CodePanel';
+import { soundEngine } from '../../lib/SoundEngine';
 import { cn, parseValue, wait, compareValues } from '../../lib/utils';
 
 const ACCENT = 'var(--accent-tree)';
 const ACCENT_HEX = '#4ADE80';
 
 const TREE_COMPLEXITY = { time: { best: 'Ω(log n)', avg: 'Θ(log n)', worst: 'O(n)' }, space: 'O(n)', note: 'Tree Structures.' };
+
+const CODE_SNIPPETS: Record<string, string[]> = {
+  bst_insert: [
+    "Node insert(Node root, int val) {",
+    "    if (root == null) return new Node(val);",
+    "    if (val < root.val)",
+    "        root.left = insert(root.left, val);",
+    "    else if (val > root.val)",
+    "        root.right = insert(root.right, val);",
+    "    return root;",
+    "}"
+  ],
+  avl_insert: [
+    "Node insertAVL(Node root, int val) {",
+    "    root = insert(root, val);",
+    "    int balance = getBalance(root);",
+    "    if (balance > 1 && val < root.left.val) return rightRotate(root);",
+    "    if (balance < -1 && val > root.right.val) return leftRotate(root);",
+    "    if (balance > 1 && val > root.left.val) return leftRightRotate(root);",
+    "    if (balance < -1 && val < root.right.val) return rightLeftRotate(root);",
+    "    return root;",
+    "}"
+  ],
+  bfs: [
+    "void bfs(Node root) {",
+    "    Queue<Node> q = new LinkedList<>();",
+    "    q.add(root);",
+    "    while (!q.isEmpty()) {",
+    "        Node curr = q.poll();",
+    "        if (curr.left != null) q.add(curr.left);",
+    "        if (curr.right != null) q.add(curr.right);",
+    "    }",
+    "}"
+  ],
+  pre: [
+    "void preOrder(Node node) {",
+    "    if (node == null) return;",
+    "    visit(node);",
+    "    preOrder(node.left);",
+    "    preOrder(node.right);",
+    "}"
+  ],
+  in: [
+    "void inOrder(Node node) {",
+    "    if (node == null) return;",
+    "    inOrder(node.left);",
+    "    visit(node);",
+    "    inOrder(node.right);",
+    "}"
+  ],
+  post: [
+    "void postOrder(Node node) {",
+    "    if (node == null) return;",
+    "    postOrder(node.left);",
+    "    postOrder(node.right);",
+    "    visit(node);",
+    "}"
+  ]
+};
 
 export type TreeNode = {
   id: string;
@@ -46,6 +107,8 @@ export const TreeSection: React.FC<TreeSectionProps> = ({ id }) => {
   const [isRunning, setIsRunning] = useState(false);
   const [stepMode, setStepMode] = useState(false);
   const [message, setMessage] = useState<string>('');
+  const [activeLine, setActiveLine] = useState<number | null>(null);
+  const [currentOp, setCurrentOp] = useState<string>('bst_insert');
   
   const nextStepRef = useRef<(() => void) | null>(null);
   const stopRef = useRef(false);
@@ -99,17 +162,25 @@ export const TreeSection: React.FC<TreeSectionProps> = ({ id }) => {
   };
 
   const insertNode = async (node: TreeNode | null, value: string | number, isAVL: boolean, mutRootRef: { current: TreeNode | null }): Promise<TreeNode> => {
+    setActiveLine(0); await proceed(100);
     if (!node) {
+      setActiveLine(1); await proceed(100);
       const newNode = { id: generateId(), val: value, left: null, right: null, height: 1 };
       await updateVisuals(mutRootRef.current, newNode.id, `Inserted ${value}`, 300);
+      if (typeof value === 'number') soundEngine.playValue(value);
       return newNode;
     }
 
     await updateVisuals(mutRootRef.current, node.id, `Comparing ${value} with ${node.val}`, 400);
+    if (typeof node.val === 'number') soundEngine.playValue(node.val);
 
     if (compareValues(value, node.val) < 0) {
+      setActiveLine(2); await proceed(100);
+      setActiveLine(3); await proceed(100);
       node.left = await insertNode(node.left, value, isAVL, mutRootRef);
     } else if (compareValues(value, node.val) > 0) {
+      setActiveLine(4); await proceed(100);
+      setActiveLine(5); await proceed(100);
       node.right = await insertNode(node.right, value, isAVL, mutRootRef);
     } else {
       setMessage(`Duplicate value ${value} ignored`);
@@ -119,16 +190,20 @@ export const TreeSection: React.FC<TreeSectionProps> = ({ id }) => {
     updateHeight(node);
 
     if (isAVL) {
+      setActiveLine(2); await proceed(100);
       const balance = getBalance(node);
       if (balance > 1 && node.left && compareValues(value, node.left.val) < 0) {
+        setActiveLine(3); await proceed(100);
         await updateVisuals(mutRootRef.current, node.id, `Left-Left Imbalance at ${node.val}`, 600);
         return await rightRotate(node, mutRootRef.current);
       }
       if (balance < -1 && node.right && compareValues(value, node.right.val) > 0) {
+        setActiveLine(4); await proceed(100);
         await updateVisuals(mutRootRef.current, node.id, `Right-Right Imbalance at ${node.val}`, 600);
         return await leftRotate(node, mutRootRef.current);
       }
       if (balance > 1 && node.left && compareValues(value, node.left.val) > 0) {
+        setActiveLine(5); await proceed(100);
         await updateVisuals(mutRootRef.current, node.id, `Left-Right Imbalance at ${node.val}`, 600);
         node.left = await leftRotate(node.left, mutRootRef.current);
         mutRootRef.current = cloneTree(mutRootRef.current); // Force visual sync
@@ -136,6 +211,7 @@ export const TreeSection: React.FC<TreeSectionProps> = ({ id }) => {
         return await rightRotate(node, mutRootRef.current);
       }
       if (balance < -1 && node.right && compareValues(value, node.right.val) < 0) {
+        setActiveLine(6); await proceed(100);
         await updateVisuals(mutRootRef.current, node.id, `Right-Left Imbalance at ${node.val}`, 600);
         node.right = await rightRotate(node.right, mutRootRef.current);
         mutRootRef.current = cloneTree(mutRootRef.current);
@@ -143,6 +219,7 @@ export const TreeSection: React.FC<TreeSectionProps> = ({ id }) => {
         return await leftRotate(node, mutRootRef.current);
       }
     }
+    setActiveLine(6); await proceed(100);
     return node;
   };
 
@@ -151,6 +228,7 @@ export const TreeSection: React.FC<TreeSectionProps> = ({ id }) => {
     if (v === "") return; 
     setIsRunning(true);
     stopRef.current = false;
+    setCurrentOp(treeMode === 'avl' ? 'avl_insert' : 'bst_insert');
     setMessage(`Inserting ${v}...`);
 
     try {
@@ -158,6 +236,7 @@ export const TreeSection: React.FC<TreeSectionProps> = ({ id }) => {
       if (!mutRootRef.current) {
         mutRootRef.current = { id: generateId(), val: v, left: null, right: null, height: 1 };
         await updateVisuals(mutRootRef.current, mutRootRef.current.id, `Inserted ${v} as Root`, 500);
+        if (typeof v === 'number') soundEngine.playValue(v);
       } else {
         mutRootRef.current = await insertNode(mutRootRef.current, v, treeMode === 'avl', mutRootRef);
       }
@@ -169,6 +248,7 @@ export const TreeSection: React.FC<TreeSectionProps> = ({ id }) => {
     }
     setVal(''); 
     setIsRunning(false);
+    setActiveLine(null);
   };
 
   const getMinValueNode = (node: TreeNode): TreeNode => {
@@ -244,36 +324,49 @@ export const TreeSection: React.FC<TreeSectionProps> = ({ id }) => {
   const runTraversal = async () => {
     setIsRunning(true);
     stopRef.current = false;
+    setCurrentOp(algo);
     setMessage(`Running ${algo.toUpperCase()} Traversal...`);
     
     const dfs = async (node: TreeNode | null, type: string) => {
-      if (!node || stopRef.current) return;
-      if (type === 'pre') { setActiveNode(node.id); await proceed(600); }
-      await dfs(node.left, type);
-      if (type === 'in') { setActiveNode(node.id); await proceed(600); }
-      await dfs(node.right, type);
-      if (type === 'post') { setActiveNode(node.id); await proceed(600); }
+      setActiveLine(0); await proceed(50);
+      if (!node || stopRef.current) { setActiveLine(1); await proceed(50); return; }
+      
+      if (type === 'pre') { setActiveLine(2); setActiveNode(node.id); if(typeof node.val === 'number') soundEngine.playValue(node.val); await proceed(600); }
+      setActiveLine(3); await dfs(node.left, type);
+      if (type === 'in') { setActiveLine(3); setActiveNode(node.id); if(typeof node.val === 'number') soundEngine.playValue(node.val); await proceed(600); }
+      setActiveLine(4); await dfs(node.right, type);
+      if (type === 'post') { setActiveLine(4); setActiveNode(node.id); if(typeof node.val === 'number') soundEngine.playValue(node.val); await proceed(600); }
     };
 
     try {
       if (algo === 'bfs') {
+        setActiveLine(0); await proceed(100);
         const q = root ? [root] : [];
+        setActiveLine(1); await proceed(100);
+        setActiveLine(2); await proceed(100);
         while (q.length > 0) {
+          setActiveLine(3); await proceed(100);
           const curr = q.shift()!;
           if (stopRef.current) break;
+          setActiveLine(4);
           setActiveNode(curr.id);
+          if(typeof curr.val === 'number') soundEngine.playValue(curr.val);
           await proceed(600);
+          setActiveLine(5); await proceed(100);
           if (curr.left) q.push(curr.left);
+          setActiveLine(6); await proceed(100);
           if (curr.right) q.push(curr.right);
         }
       } else {
         await dfs(root, algo);
       }
+      soundEngine.playSuccess();
     } catch (e) {
       console.log("Traversal Aborted");
     }
     
     setActiveNode(null);
+    setActiveLine(null);
     setMessage('Idle');
     setIsRunning(false);
   };
@@ -388,7 +481,7 @@ export const TreeSection: React.FC<TreeSectionProps> = ({ id }) => {
         style={{ background: 'var(--bg-primary)' }}
       >
         <div
-          className="absolute pointer-events-none"
+          className="absolute pointer-events-none z-0"
           style={{
             width: 600, height: 600, borderRadius: '50%',
             background: `radial-gradient(circle, ${ACCENT_HEX}08 0%, transparent 70%)`,
@@ -415,6 +508,13 @@ export const TreeSection: React.FC<TreeSectionProps> = ({ id }) => {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Code Panel */}
+        {CODE_SNIPPETS[currentOp] && (
+          <div className="absolute bottom-8 left-8 z-30">
+            <CodePanel code={CODE_SNIPPETS[currentOp]} activeLine={activeLine} accent={ACCENT} />
+          </div>
+        )}
 
         <div className="relative w-full h-full max-w-4xl min-h-[600px] flex justify-center">
           <AnimatePresence>

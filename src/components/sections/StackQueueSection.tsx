@@ -8,6 +8,8 @@ import { StepControl } from '../ui/StepControl';
 import { ComplexityHUD } from '../ui/ComplexityHUD';
 import { SectionHeader } from '../ui/SectionHeader';
 import { GridBackground } from '../ui/GridBackground';
+import { CodePanel } from '../ui/CodePanel';
+import { soundEngine } from '../../lib/SoundEngine';
 import { cn, parseValue, wait, compareValues } from '../../lib/utils';
 
 const ACCENT = 'var(--accent-stack)';
@@ -19,6 +21,42 @@ const complexities = {
   pq:    { time: { best: 'Ω(1)', avg: 'Θ(log n)', worst: 'O(n)' }, space: 'O(n)', note: 'Priority.' }
 };
 
+const CODE_SNIPPETS: Record<string, string[]> = {
+  stack: [
+    "void push(int x) {",
+    "    if (top == MAX - 1) return; // Overflow",
+    "    stack[++top] = x;",
+    "}",
+    "",
+    "int pop() {",
+    "    if (top == -1) return -1; // Underflow",
+    "    return stack[top--];",
+    "}"
+  ],
+  queue: [
+    "void enqueue(int x) {",
+    "    if (rear == MAX - 1) return; // Overflow",
+    "    queue[++rear] = x;",
+    "}",
+    "",
+    "int dequeue() {",
+    "    if (front > rear) return -1; // Underflow",
+    "    return queue[front++];",
+    "}"
+  ],
+  pq: [
+    "void insert(int x) {",
+    "    pq[size++] = x;",
+    "    sort(pq); // Priority adjustment",
+    "}",
+    "",
+    "int extract() {",
+    "    if (size == 0) return -1;",
+    "    return pq[--size];",
+    "}"
+  ]
+};
+
 interface StackQueueSectionProps {
   id: string;
 }
@@ -28,28 +66,43 @@ export const StackQueueSection: React.FC<StackQueueSectionProps> = ({id}) => {
   const [d, setD] = useState<(string|number)[]>([10, "A", 20]);
   const [v, setV] = useState('');
   const [stepMode, setStepMode] = useState(false);
+  const [activeLine, setActiveLine] = useState<number | null>(null);
   const nextStepRef = useRef<(() => void) | null>(null);
-  const proceed = async () => { if (stepMode) await new Promise<void>(resolve => { nextStepRef.current = resolve; }); else await wait(300 / ((window as any).__SPEED_FACTOR__ || 1)); };
+  const proceed = async (delay = 300) => { if (stepMode) await new Promise<void>(resolve => { nextStepRef.current = resolve; }); else await wait(delay / ((window as any).__SPEED_FACTOR__ || 1)); };
   const nextStep = () => { if (nextStepRef.current) { nextStepRef.current(); nextStepRef.current = null; } };
 
   const push = async () => {
     if(v === "") return;
     if (d.length >= 10) { alert("Max input size is 10"); return; }
-    await proceed();
+    setActiveLine(0); await proceed(100);
+    setActiveLine(1); await proceed(100);
     const newVal = parseValue(v);
     if (mode === 'pq') {
+      setActiveLine(1); await proceed(200);
+      setActiveLine(2);
       const sorted = [...d, newVal].sort(compareValues);
       setD(sorted);
     } else {
+      setActiveLine(2);
       setD([...d, newVal]);
     }
+    if (typeof newVal === 'number') soundEngine.playValue(newVal as number);
+    await proceed(300);
     setV('');
+    setActiveLine(null);
   };
 
   const pop = async () => {
     if(!d.length) return;
-    await proceed();
+    setActiveLine(5); await proceed(100);
+    setActiveLine(6); await proceed(100);
+    setActiveLine(7);
+    const val = mode === 'stack' ? d[d.length - 1] : d[0];
+    if (typeof val === 'number') soundEngine.playValue(val as number);
+    await proceed(200);
     setD(mode === 'stack' ? d.slice(0,-1) : d.slice(1));
+    await proceed(300);
+    setActiveLine(null);
   };
 
   return (
@@ -86,12 +139,12 @@ export const StackQueueSection: React.FC<StackQueueSectionProps> = ({id}) => {
 
       {/* RIGHT: Canvas */}
       <div
-        className="flex-1 min-h-[60vh] lg:min-h-0 relative flex items-center justify-center p-8 overflow-hidden"
+        className="flex-1 min-h-[60vh] lg:min-h-0 relative flex flex-col items-center justify-end overflow-hidden"
         style={{ background: 'var(--bg-primary)' }}
       >
         {/* Accent radial glow */}
         <div
-          className="absolute pointer-events-none"
+          className="absolute pointer-events-none z-0"
           style={{
             width: 600,
             height: 600,
@@ -103,35 +156,46 @@ export const StackQueueSection: React.FC<StackQueueSectionProps> = ({id}) => {
           }}
         />
         <GridBackground />
-        <div
-          className={cn(
-            "flex gap-3 p-8 border rounded-3xl items-center justify-center transition-all relative overflow-hidden z-10",
-            mode === 'stack' ? "flex-col-reverse w-48 h-[500px] border-b-4" : "flex-row min-h-[150px] min-w-[350px]"
+        <div className="flex flex-col items-center justify-end w-full h-[70%] lg:h-[80%] max-w-4xl px-4 lg:px-8 pb-10 z-10 gap-6">
+          {/* Code Panel */}
+          {CODE_SNIPPETS[mode] && (
+            <div className="z-30 w-full flex justify-center mb-10">
+              <CodePanel code={CODE_SNIPPETS[mode]} activeLine={activeLine} accent={ACCENT} />
+            </div>
           )}
-          style={{ border: `1px solid ${ACCENT_HEX}30`, background: `${ACCENT_HEX}04` }}
-        >
-          <AnimatePresence mode='popLayout'>
-            {d.map((x, i) => (
-              <motion.div
-                layout
-                key={`${i}-${x}`}
-                initial={{ opacity: 0, scale: 0.5 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0 }}
-                className={cn(
-                  "rounded-xl border flex items-center justify-center font-mono font-bold text-lg",
-                  mode === 'stack' ? "w-full h-14" : "w-16 h-16"
-                )}
-                style={{
-                  border: `1px solid ${ACCENT_HEX}40`,
-                  background: 'var(--bg-elevated)',
-                  color: 'var(--text-primary)',
-                }}
-              >
-                {x}
-              </motion.div>
-            ))}
-          </AnimatePresence>
+          
+          <div className="flex gap-3 flex-wrap justify-center max-w-5xl relative z-10 mt-auto">
+            <div
+              className={cn(
+                "flex gap-3 p-8 border rounded-3xl items-center justify-center transition-all relative overflow-hidden z-10",
+                mode === 'stack' ? "flex-col-reverse w-48 h-[500px] border-b-4" : "flex-row min-h-[150px] min-w-[350px]"
+              )}
+              style={{ border: `1px solid ${ACCENT_HEX}30`, background: `${ACCENT_HEX}04` }}
+            >
+              <AnimatePresence mode='popLayout'>
+                {d.map((x, i) => (
+                  <motion.div
+                    layout
+                    key={`${i}-${x}`}
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0 }}
+                    className={cn(
+                      "rounded-xl border flex items-center justify-center font-mono font-bold text-lg",
+                      mode === 'stack' ? "w-full h-14" : "w-16 h-16"
+                    )}
+                    style={{
+                      border: `1px solid ${ACCENT_HEX}40`,
+                      background: 'var(--bg-elevated)',
+                      color: 'var(--text-primary)',
+                    }}
+                  >
+                    {x}
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          </div>
         </div>
       </div>
     </section>

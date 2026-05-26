@@ -8,6 +8,8 @@ import { StepControl } from '../ui/StepControl';
 import { ComplexityHUD } from '../ui/ComplexityHUD';
 import { SectionHeader } from '../ui/SectionHeader';
 import { GridBackground } from '../ui/GridBackground';
+import { CodePanel } from '../ui/CodePanel';
+import { soundEngine } from '../../lib/SoundEngine';
 import { parseValue, wait } from '../../lib/utils';
 
 const ACCENT = 'var(--accent-arrays)';
@@ -15,6 +17,36 @@ const ACCENT = 'var(--accent-arrays)';
 const ARR_COMPLEXITY = {
   static:  { time: { best: 'Ω(1)', avg: 'Θ(1)', worst: 'O(1)' }, space: 'O(1)', note: 'Fast access.' },
   dynamic: { time: { best: 'Ω(1)', avg: 'Θ(1)', worst: 'O(n)' }, space: 'O(n)', note: 'Resize O(n).' }
+};
+
+const CODE_SNIPPETS: Record<string, string[]> = {
+  static: [
+    "void insert(int[] arr, int val, int idx) {",
+    "    if (idx < 0 || idx >= MAX_SIZE) return;",
+    "    for (int i = MAX_SIZE - 1; i > idx; i--) {",
+    "        arr[i] = arr[i - 1];",
+    "    }",
+    "    arr[idx] = val;",
+    "}",
+    "",
+    "void remove(int[] arr, int idx) {",
+    "    for (int i = idx; i < MAX_SIZE - 1; i++) {",
+    "        arr[i] = arr[i + 1];",
+    "    }",
+    "}"
+  ],
+  dynamic: [
+    "void insert(ArrayList<Integer> arr, int val, int idx) {",
+    "    if (arr.size() == capacity) {",
+    "        resize(); // O(N)",
+    "    }",
+    "    arr.add(idx, val);",
+    "}",
+    "",
+    "void remove(ArrayList<Integer> arr, int idx) {",
+    "    arr.remove(idx);",
+    "}"
+  ]
 };
 
 interface ArraySectionProps {
@@ -27,12 +59,75 @@ export const ArraySection: React.FC<ArraySectionProps> = ({ id }) => {
   const [val, setVal] = useState('');
   const [idx, setIdx] = useState('');
   const [active, setActive] = useState<number | null>(null);
+  const [activeLine, setActiveLine] = useState<number | null>(null);
   const [stepMode, setStepMode] = useState(false);
   const nextStepRef = useRef<(() => void) | null>(null);
-  const proceed = async () => { if (stepMode) await new Promise<void>(resolve => { nextStepRef.current = resolve; }); else await wait(500 / ((window as any).__SPEED_FACTOR__ || 1)); };
+  const proceed = async (delay = 500) => { if (stepMode) await new Promise<void>(resolve => { nextStepRef.current = resolve; }); else await wait(delay / ((window as any).__SPEED_FACTOR__ || 1)); };
   const nextStep = () => { if (nextStepRef.current) { nextStepRef.current(); nextStepRef.current = null; } };
-  const insert = async () => { if (val === "") return; if (arr.length >= 10) { alert("Max input size is 10"); return; } const i = idx===''?arr.length:parseInt(idx); if(i<0||i>arr.length)return; const newArr = [...arr]; if (i < newArr.length) { for(let k=newArr.length; k>i; k--) { setActive(k-1); await proceed(); } } newArr.splice(i,0,parseValue(val)); setArr(newArr); setActive(i); await proceed(); setActive(null); setVal(''); };
-  const remove = async () => { const i = idx===''?arr.length-1:parseInt(idx); if(i<0||i>=arr.length)return; setActive(i); await proceed(); setArr(arr.filter((_,x)=>x!==i)); setActive(null); };
+  const insert = async () => { 
+      if (val === "") return; 
+      if (arr.length >= 10) { alert("Max input size is 10"); return; } 
+      const i = idx === '' ? arr.length : parseInt(idx); 
+      if(i < 0 || i > arr.length) return; 
+      
+      const newArr = [...arr]; 
+      const parsedVal = parseValue(val);
+      setActiveLine(0); await proceed(300);
+      setActiveLine(1); await proceed(300);
+      
+      if (mode === 'static') {
+        setActiveLine(2); await proceed(300);
+        if (i < newArr.length) { 
+            for(let k = newArr.length; k > i; k--) { 
+                setActiveLine(3);
+                setActive(k-1); 
+                soundEngine.playValue(100 + (k * 10));
+                await proceed(); 
+            } 
+        } 
+        setActiveLine(5); await proceed(300);
+      } else {
+        setActiveLine(2); await proceed(300);
+        setActiveLine(4); await proceed(300);
+      }
+      
+      newArr.splice(i, 0, parsedVal); 
+      setArr(newArr); 
+      setActive(i); 
+      if (typeof parsedVal === 'number') soundEngine.playValue(parsedVal);
+      else soundEngine.playValue(100);
+      await proceed(); 
+      setActiveLine(null);
+      setActive(null); 
+      setVal(''); 
+      soundEngine.playSuccess();
+  };
+  const remove = async () => { 
+      const i = idx === '' ? arr.length - 1 : parseInt(idx); 
+      if(i < 0 || i >= arr.length) return; 
+      
+      setActiveLine(mode === 'static' ? 8 : 7); await proceed(300);
+      setActive(i); 
+      soundEngine.playValue(50);
+      await proceed(); 
+      
+      if (mode === 'static') {
+         setActiveLine(9); await proceed(300);
+         for(let k = i; k < arr.length - 1; k++) {
+             setActiveLine(10);
+             setActive(k);
+             soundEngine.playValue(100 + (k * 10));
+             await proceed();
+         }
+      } else {
+         setActiveLine(8); await proceed(300);
+      }
+      
+      setArr(arr.filter((_,x) => x !== i)); 
+      setActiveLine(null);
+      setActive(null); 
+      soundEngine.playSuccess();
+  };
 
   return (
     <section
@@ -88,7 +183,15 @@ export const ArraySection: React.FC<ArraySectionProps> = ({ id }) => {
           }}
         />
         <GridBackground />
-        <div className="flex flex-wrap gap-4 justify-center max-w-4xl relative z-10">
+        
+        {/* Code Panel */}
+        {CODE_SNIPPETS[mode] && (
+          <div className="absolute bottom-8 left-8 z-30">
+            <CodePanel code={CODE_SNIPPETS[mode]} activeLine={activeLine} accent={ACCENT} />
+          </div>
+        )}
+
+        <div className="flex flex-wrap gap-4 justify-center max-w-4xl relative z-10 pt-10 pb-32">
           <AnimatePresence mode='popLayout'>
             {arr.map((v, i) => (
               <motion.div
